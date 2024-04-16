@@ -131,6 +131,6 @@ Chat {
 ```
 
 ## Variables
->Token - save in cookie, long decay (1mo)
+>Token - save in cookie, long decay (1mo) 64 chars
 
->Session - save in cookie, fast decay (2h)
+>Session - save in cookie, fast decay (2h), 32 chars
