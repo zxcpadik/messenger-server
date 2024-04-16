@@ -12,10 +12,10 @@ export class Session {
   public IPAddress: string = "";
 
   public IsDecayed() {
-    return this.DecayDate.getTime() < (new Date().getTime() - new Date().getTimezoneOffset() * 60000);
+    return this.DecayDate.getTime() < Date.now();
   }
 
   public Renew() {
-    this.DecayDate = new Date(new Date().getTime() - (new Date().getTimezoneOffset() * 60000) + (7200000));
+    this.DecayDate = new Date(Date.now() + 7200000);
   }
 }

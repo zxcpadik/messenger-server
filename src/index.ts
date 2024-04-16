@@ -28,7 +28,9 @@ app.post('/api/v0/user/auth', async (req: Request, res: Response) => {
   const Session = await SessionManager.GetSession(Hash, IP);
 
   if (Session.IsDecayed()) return res.json();
-  
+
+
+  // AUTH
 });
 
 

@@ -14,7 +14,7 @@ export class User {
   public Password: string = "";
 
   @Column({ type: "timestamp" })
-  public CreationDate: Date = new Date(new Date().getTime() - (new Date().getTimezoneOffset() * 60000));
+  public CreationDate: Date = new Date();
 
   @Column({ type: "text" })
   public IPAddress: string = "";
@@ -26,8 +26,8 @@ export class User {
 
     this.Password = [hash, salt1, salt2].join(":");
   }
-  public ComparePassword(pass: string): boolean {
-    if (!pass) return false;
+  public ComparePassword(pass?: string): boolean {
+    if (pass == undefined) return false;
 
     let blocks = this.Password.split(":");
     let hash = SHA256([blocks[1], pass, blocks[2]].join());

@@ -9,13 +9,13 @@ export class Token {
     public UserID: number = 0;
 
     @Column({ type: "timestamp" })
-    public DecayDate: Date = new Date(new Date().getTime() - (new Date().getTimezoneOffset() * 60000) + (2592000000));
+    public DecayDate: Date = new Date(0);
 
     public IsDecayed() {
-        return this.DecayDate.getTime() < (new Date().getTime() - new Date().getTimezoneOffset() * 60000);
+        return this.DecayDate.getTime() < Date.now();
     }
 
     public Renew() {
-        this.DecayDate = new Date(new Date().getTime() - (new Date().getTimezoneOffset() * 60000) + (2592000000));
+        this.DecayDate = new Date(Date.now() + 2592000000);
     }
 }
