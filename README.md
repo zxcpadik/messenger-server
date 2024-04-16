@@ -54,10 +54,11 @@ Pull messages from chat
         }
     Header: token
     Return: JSON { ok: boolean, status: int, messages?: Message[] }
-    Status: 200 - Message Pull OK
-            201 - Auth invalid
-            202 - ChatID does not exist
-            203 - Internal Error
+    Status: 210 - Message Pull OK
+            211 - Auth invalid
+            212 - ChatID does not exist
+            213 - Not in chat
+            214 - Internal Error
 ```
 #### Client:Message:Push
 Push messages into chat
@@ -74,7 +75,8 @@ Push messages into chat
             201 - Auth invalid
             202 - ChatID does not exist
             203 - Text too long
-            204 - Internal Error
+            204 - Not in chat
+            205 - Internal Error
 ```
 ### Chats
 #### Client:Chat:Get

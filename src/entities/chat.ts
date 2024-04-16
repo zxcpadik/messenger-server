@@ -1,4 +1,5 @@
 import { Entity, PrimaryColumn, Column, PrimaryGeneratedColumn } from "typeorm";
+import { MessagingService } from "../services/messaging-service";
 
 @Entity()
 export class Chat {
@@ -13,4 +14,16 @@ export class Chat {
 
     @Column()
     public CreatorID: number = 0;
+
+    public async IsUserAvailable(UserID: number) {
+      return await MessagingService.ChatsUserRepo.existsBy({ ChatID: this.ChatID, UserID});
+    }
+
+    public async GetUsersAvailable() {
+      return await MessagingService.ChatsUserRepo.findBy({ ChatID: this.ChatID });
+    }
+
+    public async GetMessagesCount() {
+      return await MessagingService.MessagesRepo.countBy({ ChatID: this.ChatID });
+    }
 }
