@@ -111,6 +111,7 @@ Create new chat
 #### Message
 ```
 Message {
+    id: int - ID of message (chat local)
     text: string
     from: int - Sender UserID    
     time: bigint (ulong) - Message send time as UNIX without Time Zone
