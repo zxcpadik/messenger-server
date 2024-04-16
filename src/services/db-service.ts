@@ -6,15 +6,21 @@ import { User } from "../entities/user"
 import { Message } from "../entities/message"
 import { Chat } from "../entities/chat"
 
-export const AppDataSource = new DataSource({
+const AppDataSource = new DataSource({
     type: "postgres",
     host: "localhost",
     port: 5432,
     username: "postgres",
-    password: "12345678",
+    password: "yFpulGPi4L9Mnq3j",
     database: "messenger",
-    entities: [Session, ChatUser, Token, User, Message, Chat]
+    entities: [Session, ChatUser, Token, User, Message, Chat],
+    subscribers: [],
+    migrations: [],
+    synchronize: true,
+    logging: false
 })
+
+export const DBSource = AppDataSource;
 
 AppDataSource.initialize()
     .then(() => {

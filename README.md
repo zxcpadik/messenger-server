@@ -3,15 +3,15 @@
 ## API
 ### Session
 #### Session:Open
-Opens new session
+Open new session
 ```
 [GET] /api/v0/session/open
     Return: Plain/Text { session?: string }
 ```
 #### Session:Ping 
-Keeps session marked online
+Keep session online
 ```
-[GET] /api/v0/session/ping
+[GET] /api/v0/session/pulse
     Header: session
     Return: Plain/Text: "pong" - status ok
                         "closed" - status closed
@@ -114,7 +114,7 @@ Message {
     id: int - ID of message (chat local)
     text: string
     from: int - Sender UserID    
-    time: bigint (ulong) - Message send time as UNIX without Time Zone
+    time: bigint (ulong) - Message send time as UNIX with Time Zone
     replyid?: int - Reply UserID /*RESERVED IN DEV*/
 }
 ```
