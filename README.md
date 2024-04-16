@@ -1,20 +1,22 @@
 # messenger-server
 
 ### API
-
-``` Session:Open
+#### Session:Open
+```
 [GET] /api/v0/session/open
     Return: Plain/Text { session?: string }
 ```
 
-``` Session:Ping
+#### Session:Ping 
+```
 [GET] /api/v0/session/ping
     Header: session
     Return: Plain/Text: "pong" - status ok
                         "closed" - status closed
 ```
 
-``` User:Auth
+#### User:Auth 
+```
 [POST] /api/v0/user/auth
     Args: JSON { username: string, password: AES(password, key: session) }
     Header: session
@@ -25,7 +27,8 @@
             103 - Internal Error
 ```
 
-``` User:Register
+#### User:Register
+```
 [POST] /api/v0/user/register
     Args: JSON { username: string, password: AES(password, key: session) }
     Return: JSON { ok: boolean, status: int, token?: string }
@@ -35,7 +38,8 @@
             113 - Internal Error
 ```
 
-``` Client:Message:Pull
+#### Client:Message:Pull
+```
 [POST] /api/v0/client/messages/pull
     Args: JSON { 
             chatid: bigint (ulong),
@@ -52,7 +56,8 @@
             203 - Internal Error
 ```
 
-``` Client:Message:Push
+#### Client:Message:Push
+```
 [POST] /api/v0/client/messages/push
     Args: JSON {
             chatid: bigint (ulong),
@@ -68,7 +73,8 @@
             204 - Internal Error
 ```
 
-``` Client:Chat:Get - Get all chats
+#### Client:Chat:Get
+```
 [POST] /api/v0/client/chat/get
     Args: JSON {
             options?: {/* RESERVED IN DEV*/}
@@ -80,7 +86,8 @@
             202 - Internal Error
 ```
 
-``` Client:Chat:Create - Create new char or group(?)
+#### Client:Chat:Create
+```
 [POST] /api/v0/client/chat/create
     Args: JSON {
             userid: int[] - ID of users /*GROUPS IN DEV SUPPORT ONLY 1 USERID*/
@@ -94,8 +101,10 @@
             203 - Internal Error
 ```
 
+### Objects
 
-``` Message object
+#### Message
+```
 Message {
     text: string
     from: int - Sender UserID    
@@ -104,7 +113,8 @@ Message {
 }
 ```
 
-``` Chat object
+#### Chat
+```
 Chat {
     title: string
     chatid: int
@@ -114,7 +124,6 @@ Chat {
 }
 ```
 
-``` Client defs
-Token - save in cookie, long decay (1mo)
-Session - save in cookie, fast decay (2h)
-```
+### Variables
+>Token - save in cookie, long decay (1mo)
+>Session - save in cookie, fast decay (2h)
