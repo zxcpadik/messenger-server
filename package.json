@@ -1,0 +1,31 @@
+{
+  "name": "messenger-server",
+  "version": "1.0.0",
+  "description": "Opens new session\r ```\r [GET] /api/v0/session/open\r     Return: Plain/Text { session?: string }\r ```\r #### Session:Ping \r Keeps session marked online\r ```\r [GET] /api/v0/session/ping\r     Header: session\r     Return: Plain/Text: \"pong\" - status ok\r                         \"closed\" - status closed\r ```\r ### User\r #### User:Auth\r User authorization\r ```\r [POST] /api/v0/user/auth\r     Args: JSON { username: string, password: AES(password, key: session) }\r     Header: session\r     Return: JSON { ok: boolean, status: int, token?: string }\r     Status: 100 - Auth OK\r             101 - Password Incorrect\r             102 - User not exist\r             103 - Internal Error\r ```\r #### User:Register\r User registration\r ```\r [POST] /api/v0/user/register\r     Args: JSON { username: string, password: AES(password, key: session) }\r     Return: JSON { ok: boolean, status: int, token?: string }\r     Status: 110 - Register OK\r             111 - Bad Format\r             112 - User already exist\r             113 - Internal Error\r ```\r ### Messages\r #### Client:Message:Pull\r Pull messages from chat\r ```\r [POST] /api/v0/client/messages/pull\r     Args: JSON { \r             chatid: bigint (ulong),\r             options?: {\r                 offset: int (default: last)\r                 count: int (default: 1, maximum: 100)\r             }\r         }\r     Header: token\r     Return: JSON { ok: boolean, status: int, messages?: Message[] }\r     Status: 200 - Message Pull OK\r             201 - Auth invalid\r             202 - ChatID does not exist\r             203 - Internal Error\r ```\r #### Client:Message:Push\r Push messages into chat\r ```\r [POST] /api/v0/client/messages/push\r     Args: JSON {\r             chatid: bigint (ulong),\r             text: string (max: 512 chars)\r             options?: {/* RESERVED IN DEV*/}\r         }\r     Header: token\r     Return: JSON { ok: boolean, status: int, messages?: Message[] }\r     Status: 200 - Message Push OK\r             201 - Auth invalid\r             202 - ChatID does not exist\r             203 - Text too long\r             204 - Internal Error\r ```\r ### Chats\r #### Client:Chat:Get\r Get all chats\r ```\r [POST] /api/v0/client/chat/get\r     Args: JSON {\r             options?: {/* RESERVED IN DEV*/}\r         }\r     Header: token\r     Return: JSON { ok: boolean, status: int, chats?: Chat[] }\r     Status: 200 - Chats Get OK\r             201 - Auth invalid\r             202 - Internal Error\r ```\r #### Client:Chat:Create\r Create new chat\r ```\r [POST] /api/v0/client/chat/create\r     Args: JSON {\r             userid: int[] - ID of users /*GROUPS IN DEV SUPPORT ONLY 1 USERID*/\r             title: string - /*RESERVED IN DEV FOR GROUPS*/\r         }\r     Header: token\r     Return: JSON { ok: boolean, status: int, chat?: Chat }\r     Status: 200 - Chats Create OK\r             201 - Auth invalid\r             202 - Title too long\r             203 - Internal Error\r ```",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@types/express-form-data": "^2.0.5",
+    "@types/randomstring": "^1.3.0",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "express-form-data": "^2.0.23",
+    "pg": "^8.11.5",
+    "randomstring": "^1.3.0",
+    "reflect-metadata": "^0.2.2",
+    "sha256": "^0.2.0",
+    "ts-node": "^10.9.2",
+    "typeorm": "^0.3.20",
+    "typescript": "^5.4.5"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.12.7",
+    "@types/sha256": "^0.2.2"
+  }
+}
