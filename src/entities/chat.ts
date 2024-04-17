@@ -10,6 +10,9 @@ export class Chat {
     @Column({type: "text" })
     public title: string = "";
 
+    @Column({type: "text", nullable: true })
+    public description: string | undefined;
+
     @Column({ type: "timestamp", default: () => "CURRENT_TIMESTAMP" })
     public creationdate: Date = new Date(new Date().getTime() - (new Date().getTimezoneOffset() * 60000));
 

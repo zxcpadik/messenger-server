@@ -72,18 +72,20 @@ export module MessagingService {
 
     return new GetUserChatsResult(true, GetUserChatsResultCode.Success, chats);
   }
-  export async function CreateChat(token?: string, userIDs?: number[], title?: string): Promise<CreateChatResult> {
+  export async function CreateChat(token?: string, userIDs?: number[], title?: string, description?: string): Promise<CreateChatResult> {
     if (token == undefined || userIDs == undefined || title == undefined) return new CreateChatResult(false, CreateChatResultCode.NullParameter);
 
     var UserID = await TokenManager.AuthToken(token);
     if (UserID == undefined) return new CreateChatResult(false, CreateChatResultCode.NoAuth);
 
     if (title.length > 64 || title.length == 0) return new CreateChatResult(false, CreateChatResultCode.TitleFormat);
+    if (description != undefined && description.length > 128) return new CreateChatResult(false, CreateChatResultCode.DescriptionFormat);
 
     var chat = new Chat();
     chat.creatorid = UserID;
     chat.title = title;
     chat.isgroup = true;
+    chat.description = description;
     chat = await ChatRepo.save(chat);
     
     ChatUserRepo.save({ chatid: chat.chatid, userid: UserID, joindate: new Date() });
@@ -155,6 +157,8 @@ export module MessagingService {
     info.creatorid = Chat.creatorid;
     info.messages = res;
     info.title = Chat.title;
+    info.users = Chat.users;
+    info.description = Chat.description;
     
     return new ChatInfoResult(true, ChatInfoResultCode.Success, info);
   }
@@ -234,9 +238,19 @@ export class ChatInfoResult {
     this.info = info;
   }
 }
+export class SetChatInfoResult {
+  public ok: boolean;
+  public code: number;
+
+  constructor (ok: boolean, code: number) {
+    this.ok = ok;
+    this.code = code;
+  }
+}
 
 export class ChatInfoObj {
   public title?: string;
+  public description?: string;
   public users?: number[];
   public messages?: number;
   public creatorid?: number;

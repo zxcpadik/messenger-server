@@ -123,10 +123,11 @@ app.post('/api/v0/client/chat/create', async (req: Request, res: Response) => {
   if (Session.IsDecayed()) return res.send("SESSION EXPIRED");
 
   const token = req.headers['token']?.toString();
-  const userIDs = req.body["userid"] as number[];
-  const title = req.body["title"] as string;
+  const userIDs = req.body["userid"] as number[] | undefined;
+  const title = req.body["title"] as string | undefined;
+  const description = req.body["title"] as string;
 
-  const apires = await MessagingService.CreateChat(token, userIDs, title);
+  const apires = await MessagingService.CreateChat(token, userIDs, title, description);
   if (process.env.DEBUG_MODE == "true") console.log(apires);
   res.json(apires);
 });

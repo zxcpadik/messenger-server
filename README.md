@@ -108,6 +108,7 @@ Create new chat
     Args: JSON {
             userid: int[] - ID of users
             title: string
+            description?: string
           }
     Header: token, session
     Return: JSON { ok: boolean, status: int, chat?: Chat }
@@ -115,6 +116,7 @@ Create new chat
             311 - NullParameter
             312 - NoAuth
             313 - TitleFormat
+            314 - DescriptionFormat
             319 - InternalError
 ```
 #### Client:Chat:Clear
@@ -186,6 +188,7 @@ Message {
 ```
 Chat {
   title: string
+  description?: string
   chatid: int
   creatorid: int
   creationdate: date (UNIX)
@@ -198,6 +201,7 @@ Chat {
 ```
 ChatInfoObj {
   title?: string
+  description?: string
   users?: number[]
   messages?: number
   creatorid?: number

@@ -47,6 +47,7 @@ export enum CreateChatResultCode {
   NullParameter       = 311,
   NoAuth              = 312,
   TitleFormat         = 313,
+  DescriptionFormat   = 314,
   InternalError       = 319
 }
 export enum ClearChatResultCode {
@@ -74,4 +75,15 @@ export enum ChatInfoResultCode {
   ChatNotExist        = 343,
   ChatNoAccess        = 344,
   InternalError       = 349
+}
+export enum SetChatInfoResultCode {
+  Success             = 350,
+  NullParameter       = 351,
+  NoAuth              = 352,
+  ChatNotExist        = 353,
+  ChatNoAccess        = 354,
+  NoPermission        = 355,
+  TitleFormat         = 357,
+  DescriptionFormat   = 358,
+  InternalError       = 359
 }
