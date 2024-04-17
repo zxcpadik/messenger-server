@@ -7,14 +7,14 @@ import { ChatRepo, ChatUserRepo, MessageRepo, UserRepo } from "./db-service";
 
 
 export module MessagingService {
-  export async function GetChat(chatID: number) {
-    return await ChatRepo.findOneBy({ ChatID: chatID });
+  export async function GetChat(chatID?: number) {
+    return await ChatRepo.findOneBy({ ChatID: chatID || -1 });
   }
 
   export async function PushMessage(token: string, text: string, chatID: number): Promise<number> {
     const UserID = await TokenManager.AuthToken(token);
     if (UserID == undefined) return 201;
-    if (text.length > 512) return 203;
+    if (text.length > 512 || text.length == 0) return 203;
 
     const Chat = await GetChat(chatID);
     if (Chat == null) return 202;
@@ -30,7 +30,7 @@ export module MessagingService {
 
     return 200;
   }
-  export async function PullMessage(token: string, chatID: number, offset?: number, count: number = 1): Promise<{msg: Message[], code: number}> {
+  export async function PullMessage(token: string, chatID?: number, offset?: number, count: number = 1): Promise<{msg: Message[], code: number}> {
     const UserID = await TokenManager.AuthToken(token);
     if (UserID == undefined) return {msg: [], code: 211};
 

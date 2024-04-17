@@ -5,6 +5,7 @@ import "reflect-metadata"
 import './services/db-service'
 import { SessionManager } from "./services/session-manager";
 import { AuthCredentials, AuthService } from "./services/auth-service";
+import { MessagingService } from "./services/messaging-service";
 
 dotenv.config();
 
@@ -52,6 +53,35 @@ app.post('/api/v0/user/register', async (req: Request, res: Response) => {
   res.json(apires);
 });
 
+app.post('/api/v0/client/messages/pull', async (req: Request, res: Response) => {
+  const IP = req.socket.remoteAddress || "";
+  const Hash = req.headers['session']?.toString() || "";
+  const Session = await SessionManager.GetSession(Hash, IP);
+
+  if (Session.IsDecayed()) return res.send("SESSION EXPIRED");
+
+  const token = req.headers['token']?.toString() || "";
+  const offset = req.body["options"]["username"] as number | undefined;
+  const count = req.body["options"]["password"] as number | undefined;
+  const chatid = req.body["password"] as number | undefined;
+
+  const apires = await MessagingService.PullMessage(token, chatid, offset, count);
+  res.json(apires);
+});
+app.post('/api/v0/client/messages/push', async (req: Request, res: Response) => {
+  const IP = req.socket.remoteAddress || "";
+  const Hash = req.headers['session']?.toString() || "";
+  const Session = await SessionManager.GetSession(Hash, IP);
+
+  if (Session.IsDecayed()) return res.send("SESSION EXPIRED");
+
+  const token = req.headers['token']?.toString();
+  const text = req.body["text"] as string | undefined;
+  const chatid = req.body["password"] as number | undefined;
+
+  const apires = await MessagingService.PushMessage(token || "", text || "", chatid || -1);
+  res.json(apires);
+});
 
 app.post(['/api', '/api/*'], async (req: Request, res: Response) => {
   res.json({ ok: false, status: 0 });
