@@ -116,6 +116,22 @@ Create new chat
             243 - TitleFormat
             249 - InternalError
 ```
+#### Client:Chat:Clear
+Clear all message in chat
+```
+[POST] /api/v0/client/chat/clear
+    Args: JSON {
+            chatid: int
+          }
+    Header: token, session
+    Return: JSON { ok: boolean, status: int, chat?: Chat }
+    Status: 250 - Success
+            251 - NullParameter
+            252 - NoAuth
+            253 - ChatNotExist
+            254 - ChatNoAccess
+            259 - InternalError
+```
 
 ## Objects
 

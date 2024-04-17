@@ -51,3 +51,12 @@ export enum CreateChatResultCode {
   TitleFormat         = 243,
   InternalError       = 249
 }
+
+export enum ClearChatResultCode {
+  Success             = 250,
+  NullParameter       = 251,
+  NoAuth              = 252,
+  ChatNotExist        = 253,
+  ChatNoAccess        = 254,
+  InternalError       = 259
+}
