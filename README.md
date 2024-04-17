@@ -132,10 +132,10 @@ Clear all message in chat
             254 - ChatNoAccess
             259 - InternalError
 ```
-#### Client:Chat:Clear
-Clear all message in chat
+#### Client:Chat:Remove
+Remove chat
 ```
-[POST] /api/v0/client/chat/clear
+[POST] /api/v0/client/chat/remove
     Args: JSON {
             chatid: int
           }
