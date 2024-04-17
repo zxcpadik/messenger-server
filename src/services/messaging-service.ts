@@ -80,7 +80,9 @@ export module MessagingService {
     chat = await ChatRepo.save(chat);
     
     ChatUserRepo.save({ ChatID: chat.ChatID, UserID: UserID });
-    ChatUserRepo.save({ ChatID: chat.ChatID, UserID: userIDs[0] });
+    for (let uid of userIDs) {
+      await ChatUserRepo.save({ ChatID: chat.ChatID, UserID: uid });
+    }
 
     return {chat, code: 220}
   }

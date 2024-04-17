@@ -13,8 +13,8 @@ Keep session online
 ```
 [GET] /api/v0/session/pulse
     Header: session
-    Return: Plain/Text: "pong" - status ok
-                        "closed" - status closed
+    Return: Plain/Text: "1" - status ok
+                        "0" - status bad
 ```
 ### User
 #### User:Auth
@@ -48,11 +48,11 @@ Pull messages from chat
     Args: JSON { 
             chatid: bigint (ulong),
             options?: {
-                offset: int (default: last)
-                count: int (default: 1, maximum: 100)
+              offset: int (default: last)
+              count: int (default: 1, maximum: 100)
             }
-        }
-    Header: token
+          }
+    Header: token, session
     Return: JSON { ok: boolean, status: int, messages?: Message[] }
     Status: 210 - Message Pull OK
             211 - Auth invalid
@@ -68,8 +68,8 @@ Push messages into chat
             chatid: bigint (ulong),
             text: string (max: 512 chars)
             options?: {/* RESERVED IN DEV*/}
-        }
-    Header: token
+          }
+    Header: token, session
     Return: JSON { ok: boolean, status: int, messages?: Message[] }
     Status: 200 - Message Push OK
             201 - Auth invalid
@@ -85,8 +85,8 @@ Get all chats
 [POST] /api/v0/client/chat/get
     Args: JSON {
             options?: {/* RESERVED IN DEV*/}
-        }
-    Header: token
+          }
+    Header: token, session
     Return: JSON { ok: boolean, status: int, chats?: Chat[] }
     Status: 210 - Chats Get OK
             211 - Auth invalid
@@ -99,8 +99,8 @@ Create new chat
     Args: JSON {
             userid: int[] - ID of users
             title: string
-        }
-    Header: token
+          }
+    Header: token, session
     Return: JSON { ok: boolean, status: int, chat?: Chat }
     Status: 220 - Chats Create OK
             221 - Auth invalid
@@ -114,22 +114,22 @@ Create new chat
 #### Message
 ```
 Message {
-    id: int - ID of message (chat local)
-    text: string
-    from: int - Sender UserID    
-    time: bigint (ulong) - Message send time as UNIX with Time Zone
-    replyid?: int - Reply UserID /*RESERVED IN DEV*/
+  id: int - ID of message (chat local)
+  text: string
+  from: int - Sender UserID    
+  time: bigint (ulong) - Message send time as UNIX with Time Zone
+  replyid?: int - Reply UserID /*RESERVED IN DEV*/
 }
 ```
 
 #### Chat
 ```
 Chat {
-    title: string
-    chatid: int
-    users: int[]
-    isUser: boolean /*RESERVED IN DEV*/
-    isGroup: boolean
+  title: string
+  chatid: int
+  users: int[]
+  isUser: boolean /*RESERVED IN DEV*/
+  isGroup: boolean
 }
 ```
 

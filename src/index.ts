@@ -19,8 +19,9 @@ app.get('/api/v0/session/open', async (req: Request, res: Response) => {
 app.get('/api/v0/session/pulse', async (req: Request, res: Response) => {
   const IP = req.socket.remoteAddress;
   const Hash = req.headers['session']?.toString() || "";
-  if (!IP || !Hash) return res.send();
-  res.send((await SessionManager.RenewSession(Hash, IP)).Hash);
+  if (!IP || !Hash) return res.send("0");
+  var s = await SessionManager.RenewSession(Hash, IP);
+  res.send(s.IsDecayed() ? "0" : "1");
 });
 
 app.post('/api/v0/user/auth', async (req: Request, res: Response) => {
