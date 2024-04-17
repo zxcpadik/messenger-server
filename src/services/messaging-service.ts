@@ -68,19 +68,19 @@ export module MessagingService {
 
     if (title.length > 64) return {chat: undefined, code: 222};
 
-    var UserExists = UserRepo.existsBy({ UserID: userIDs[0] });
-    if (!UserExists) return {chat: undefined, code: 223};
+    for (let uid of userIDs) {
+      var UserExists = await UserRepo.existsBy({ UserID: uid });
+      if (!UserExists) return {chat: undefined, code: 223};
+    }
 
     var chat = new Chat();
-    chat.ChatID = await ChatRepo.count();
     chat.CreatorID = UserID;
     chat.Title = title;
     chat.IsGroup = true;
+    chat = await ChatRepo.save(chat);
     
     ChatUserRepo.save({ ChatID: chat.ChatID, UserID: UserID });
     ChatUserRepo.save({ ChatID: chat.ChatID, UserID: userIDs[0] });
-
-    ChatRepo.save(chat);
 
     return {chat, code: 220}
   }

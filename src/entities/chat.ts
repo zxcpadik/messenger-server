@@ -4,7 +4,7 @@ import { ChatUserRepo, MessageRepo } from "../services/db-service";
 
 @Entity()
 export class Chat {
-    @PrimaryColumn()
+    @PrimaryGeneratedColumn()
     public ChatID: number = 0;
 
     @Column({type: "text" })
@@ -18,7 +18,7 @@ export class Chat {
 
     @Column()
     public IsUser: boolean = false;
-    
+
     @Column()
     public IsGroup: boolean = false;
 

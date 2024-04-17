@@ -97,8 +97,8 @@ Create new chat
 ```
 [POST] /api/v0/client/chat/create
     Args: JSON {
-            userid: int[] - ID of users /*GROUPS IN DEV SUPPORT ONLY 1 USERID*/
-            title: string - /*RESERVED IN DEV FOR GROUPS*/
+            userid: int[] - ID of users
+            title: string
         }
     Header: token
     Return: JSON { ok: boolean, status: int, chat?: Chat }
@@ -129,7 +129,7 @@ Chat {
     chatid: int
     users: int[]
     isUser: boolean /*RESERVED IN DEV*/
-    isGroup: boolean /*RESERVED IN DEV*/
+    isGroup: boolean
 }
 ```
 
