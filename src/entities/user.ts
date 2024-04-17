@@ -7,7 +7,7 @@ export class User {
   @PrimaryGeneratedColumn()
   public UserID: number = 0;
 
-  @Column({type: "text" })
+  @Column({type: "text", unique: true })
   public Username: string = "";
 
   @Column({type: "text" })

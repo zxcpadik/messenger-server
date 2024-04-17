@@ -3,11 +3,11 @@ import { Entity, PrimaryColumn, Column, PrimaryGeneratedColumn } from "typeorm";
 @Entity()
 export class ChatUser {
     @PrimaryColumn()
-    public UserID: number = 0;
+    public userid: number = 0;
 
     @Column()
-    public ChatID: number = 0;
+    public chatid: number = 0;
 
     @Column({ type: "timestamp" })
-    public JoinDate: Date = new Date(new Date().getTime() - (new Date().getTimezoneOffset() * 60000));
+    public joindate: Date = new Date();
 }

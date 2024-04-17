@@ -5,32 +5,38 @@ import { ChatUserRepo, MessageRepo } from "../services/db-service";
 @Entity()
 export class Chat {
     @PrimaryGeneratedColumn()
-    public ChatID: number = 0;
+    public chatid: number = 0;
 
     @Column({type: "text" })
-    public Title: string = "";
+    public title: string = "";
 
-    @Column({ type: "timestamp" })
-    public CreationDate: Date = new Date(new Date().getTime() - (new Date().getTimezoneOffset() * 60000));
-
-    @Column()
-    public CreatorID: number = 0;
+    @Column({ type: "timestamp", default: () => "CURRENT_TIMESTAMP" })
+    public creationdate: Date = new Date(new Date().getTime() - (new Date().getTimezoneOffset() * 60000));
 
     @Column()
-    public IsUser: boolean = false;
+    public creatorid: number = 0;
 
     @Column()
-    public IsGroup: boolean = false;
+    public isuser: boolean = false;
+
+    @Column()
+    public isgroup: boolean = false;
+
+    public users: number[] = [];
+
+    public async GetUsers() {
+      this.users = (await ChatUserRepo.findBy({ chatid: this.chatid })).map<number>((x) => x.userid);
+    }
 
     public async IsUserAvailable(UserID: number) {
-      return await ChatUserRepo.existsBy({ ChatID: this.ChatID, UserID});
+      return await ChatUserRepo.existsBy({ chatid: this.chatid, userid: UserID});
     }
 
     public async GetUsersAvailable() {
-      return await ChatUserRepo.findBy({ ChatID: this.ChatID });
+      return await ChatUserRepo.findBy({ chatid: this.chatid });
     }
 
     public async GetMessagesCount() {
-      return await MessageRepo.countBy({ ChatID: this.ChatID });
+      return await MessageRepo.countBy({ ChatID: this.chatid });
     }
 }

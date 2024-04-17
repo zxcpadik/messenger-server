@@ -23,6 +23,9 @@ export module TokenManager {
 
 export module AuthService {
   export async function AuthUser(credentials: AuthCredentials): Promise<AuthResult> {
+    if (credentials.password == undefined || credentials.password.length < 8 || credentials.password.length > 128) return new AuthResult(false, 111);
+    if (credentials.username == undefined || credentials.username.length < 6 || credentials.username.length > 64) return new AuthResult(false, 111);
+
     const usr = await UserRepo.findOneBy({ Username: credentials.username });
     if (usr == null) return new AuthResult(false, 102);
 
@@ -37,16 +40,17 @@ export module AuthService {
     const exist = await UserRepo.existsBy({ Username: credentials.username });
     if (exist) return new AuthResult(false, 112);
 
-    if (credentials.password == undefined) return new AuthResult(false, 111);
+    if (credentials.password == undefined || credentials.password.length < 8 || credentials.password.length > 128) return new AuthResult(false, 111);
+    if (credentials.username == undefined || credentials.username.length < 6 || credentials.username.length > 64) return new AuthResult(false, 111);
 
     const usr = new User();
     usr.IPAddress = IP;
     usr.UpdatePassword(credentials.password);
-    usr.Username = generate(10);
+    usr.Username = credentials.username;
     const res = await UserRepo.save(usr);
 
     const Token = await TokenManager.GenerateToken(res.UserID);
-    return new AuthResult(true, 100, Token.hash);
+    return new AuthResult(true, 110, Token.hash);
   }
 }
 

@@ -127,9 +127,11 @@ Message {
 Chat {
   title: string
   chatid: int
+  creatorid: int
+  creationdate: date (UNIX)
   users: int[]
-  isUser: boolean /*RESERVED IN DEV*/
-  isGroup: boolean
+  isuser: boolean /*RESERVED IN DEV*/
+  isgroup: boolean
 }
 ```
 

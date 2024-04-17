@@ -8,7 +8,11 @@ import { ChatRepo, ChatUserRepo, MessageRepo, UserRepo } from "./db-service";
 
 export module MessagingService {
   export async function GetChat(chatID?: number) {
-    return await ChatRepo.findOneBy({ ChatID: chatID || -1 });
+    return await ChatRepo.findOneBy({ chatid: chatID || -1 });
+  }
+
+  export async function GetUsersChat(chatID?: number) {
+    return await ChatUserRepo.findBy({ chatid: chatID || -1 });
   }
 
   export async function PushMessage(token: string, text: string, chatID: number): Promise<number> {
@@ -51,11 +55,11 @@ export module MessagingService {
     var UserID = await TokenManager.AuthToken(token);
     if (UserID == undefined) return {chats: [], code: 211};
 
-    var chatsIDs = await ChatUserRepo.findBy({ UserID: UserID });
+    var chatsIDs = await ChatUserRepo.findBy({ userid: UserID });
     var chats: Chat[] = [];
 
     for (var chatusr of chatsIDs) {
-      var c = await ChatRepo.findOneBy({ ChatID: chatusr.ChatID })
+      var c = await ChatRepo.findOneBy({ chatid: chatusr.chatid })
       if (c != null) chats.push(c);
     }
 
@@ -64,9 +68,9 @@ export module MessagingService {
 
   export async function CreateChat(token: string, userIDs: number[], title: string): Promise<{chat: Chat | undefined, code: number}> {
     var UserID = await TokenManager.AuthToken(token);
-    if (UserID == undefined) return {chat: undefined, code: 221};
+    if (UserID == undefined) return { chat: undefined, code: 221 };
 
-    if (title.length > 64) return {chat: undefined, code: 222};
+    if (title.length > 64 || title.length == 0) return { chat: undefined, code: 222 };
 
     for (let uid of userIDs) {
       var UserExists = await UserRepo.existsBy({ UserID: uid });
@@ -74,14 +78,14 @@ export module MessagingService {
     }
 
     var chat = new Chat();
-    chat.CreatorID = UserID;
-    chat.Title = title;
-    chat.IsGroup = true;
+    chat.creatorid = UserID;
+    chat.title = title;
+    chat.isgroup = true;
     chat = await ChatRepo.save(chat);
     
-    ChatUserRepo.save({ ChatID: chat.ChatID, UserID: UserID });
+    ChatUserRepo.save({ chatid: chat.chatid, UserID: UserID });
     for (let uid of userIDs) {
-      await ChatUserRepo.save({ ChatID: chat.ChatID, UserID: uid });
+      await ChatUserRepo.save({ chatid: chat.chatid, UserID: uid });
     }
 
     return {chat, code: 220}
