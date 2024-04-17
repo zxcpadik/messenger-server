@@ -4,7 +4,7 @@ import { ChatUser } from "../entities/chat-user";
 import { Message } from "../entities/message";
 import { TokenManager } from "./auth-service";
 import { ChatRepo, ChatUserRepo, MessageRepo, UserRepo } from "./db-service";
-import { ChatInfoResultCode, ClearChatResultCode, CreateChatResultCode, GetUserChatsResultCode, MessagePullResultCode, MessagePushResultCode, RemoveChatResultCode } from "../declarations/enums";
+import { ChatInfoResultCode, ClearChatResultCode, CreateChatResultCode, GetUserChatsResultCode, MessagePullResultCode, MessagePushResultCode, RemoveChatResultCode, SetChatInfoResultCode } from "../declarations/enums";
 
 
 export module MessagingService {
@@ -161,6 +161,25 @@ export module MessagingService {
     info.description = Chat.description;
     
     return new ChatInfoResult(true, ChatInfoResultCode.Success, info);
+  }
+  export async function SetChatInfo(token?: string, chatid?: number, title?: string, description?: string): Promise<SetChatInfoResult> {
+    if (token == undefined || chatid == undefined || (title == undefined && description == undefined)) return new SetChatInfoResult(false, SetChatInfoResultCode.NullParameter) 
+    
+    const UserID = await TokenManager.AuthToken(token);
+    if (UserID == undefined) return new SetChatInfoResult(false, SetChatInfoResultCode.NoAuth);
+  
+    const Chat = await GetChat(chatid);
+    if (Chat == null) return new SetChatInfoResult(false, SetChatInfoResultCode.ChatNotExist);
+    if (!(await Chat.IsUserAvailable(UserID))) return new SetChatInfoResult(false, SetChatInfoResultCode.ChatNoAccess);
+
+    if (title != undefined && (title.length > 64 || title.length == 0)) return new CreateChatResult(false, SetChatInfoResultCode.TitleFormat);
+    if (description != undefined && description.length > 128) return new CreateChatResult(false, SetChatInfoResultCode.DescriptionFormat);
+
+    Chat.title = title || Chat.title;
+    Chat.description = description || Chat.description;
+    await ChatRepo.save(Chat);
+    
+    return new SetChatInfoResult(true, SetChatInfoResultCode.Success);
   }
 }
 

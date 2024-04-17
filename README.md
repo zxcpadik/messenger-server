@@ -169,6 +169,26 @@ Get info about chat
             344 - ChatNoAccess
             349 - InternalError
 ```
+#### Client:Chat:SetInfo
+Set chat title or description
+```
+[POST] /api/v0/client/chat/setinfo
+    Args: JSON {
+            title?: string
+            description?: string
+          }
+    Header: token, session
+    Return: JSON { ok: boolean, status: int }
+    Status: 350 - Success
+            351 - NullParameter
+            352 - NoAuth
+            353 - ChatNotExist
+            354 - ChatNoAccess
+            355 - NoPermission
+            357 - TitleFormat
+            358 - DescriptionFormat
+            359 - InternalError
+```
 
 ## Objects
 #### Message
