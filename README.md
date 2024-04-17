@@ -24,10 +24,13 @@ User authorization
     Args: JSON { username: string, password: string }
     Header: session
     Return: JSON { ok: boolean, status: int, token?: string }
-    Status: 100 - Auth OK
-            101 - Password Incorrect
-            102 - User not exist
-            103 - Internal Error
+    Status: 100 - Success
+            101 - NullParameter
+            102 - UsernameFormat
+            103 - PasswordFormat
+            104 - UserNotExists
+            105 - PasswordIncorrect
+            109 - InternalError
 ```
 #### User:Register
 User registration
@@ -35,10 +38,12 @@ User registration
 [POST] /api/v0/user/register
     Args: JSON { username: string, password: string }
     Return: JSON { ok: boolean, status: int, token?: string }
-    Status: 110 - Register OK
-            111 - Bad Format
-            112 - User already exist
-            113 - Internal Error
+    Status: 101 - Success
+            102 - NullParameter
+            103 - UsernameFormat
+            104 - PasswordFormat
+            105 - UserAlreadyExists
+            109 - InternalError
 ```
 ### Messages
 #### Client:Message:Pull
