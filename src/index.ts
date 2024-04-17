@@ -87,7 +87,7 @@ app.post('/api/v0/client/messages/pull', async (req: Request, res: Response) => 
 
   if (Session.IsDecayed()) return res.send("SESSION EXPIRED");
 
-  const token = req.headers['token']?.toString() || "";
+  const token = req.headers['token']?.toString();
   const offset = req.body["options"]?.["offset"] as number | undefined;
   const count = req.body["options"]?.["count"] as number | undefined;
   const chatid = req.body["chatid"] as number | undefined;
@@ -110,10 +110,9 @@ app.post('/api/v0/client/messages/push', async (req: Request, res: Response) => 
   const text = req.body["text"] as string | undefined;
   const chatid = req.body["chatid"] as number | undefined;
 
-  const apires = await MessagingService.PushMessage(token || "", text || "", chatid || -1);
-  const resj = { ok: apires == 200, code: apires };
-  if (process.env.DEBUG_MODE == "true") console.log(resj);
-  res.json(resj);
+  const apires = await MessagingService.PushMessage(token, text, chatid);
+  if (process.env.DEBUG_MODE == "true") console.log(apires);
+  res.json(apires);
 });
 
 app.post('/api/v0/client/chat/create', async (req: Request, res: Response) => {
@@ -126,13 +125,13 @@ app.post('/api/v0/client/chat/create', async (req: Request, res: Response) => {
 
   if (Session.IsDecayed()) return res.send("SESSION EXPIRED");
 
-  const token = req.headers['token']?.toString() || "";
+  const token = req.headers['token']?.toString();
   const userIDs = req.body["userid"] as number[];
   const title = req.body["title"] as string;
 
   const apires = await MessagingService.CreateChat(token, userIDs, title);
   if (process.env.DEBUG_MODE == "true") console.log(apires);
-  res.json({ ok: apires.code == 220, code: apires.code, chat: apires.chat});
+  res.json(apires);
 });
 app.post('/api/v0/client/chat/get', async (req: Request, res: Response) => {
   const IP = req.socket.remoteAddress || "";
@@ -144,10 +143,10 @@ app.post('/api/v0/client/chat/get', async (req: Request, res: Response) => {
 
   if (Session.IsDecayed()) return res.send("SESSION EXPIRED");
 
-  const token = req.headers['token']?.toString() || "";
+  const token = req.headers['token']?.toString();
   const apires = await MessagingService.GetUserChats(token);
   if (process.env.DEBUG_MODE == "true") console.log(apires);
-  res.json({ ok: apires.code == 210, code: apires.code, chat: apires.chats});
+  res.json(apires);
 });
 
 app.post(['/api', '/api/*'], async (req: Request, res: Response) => {

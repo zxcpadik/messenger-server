@@ -55,14 +55,14 @@ export module AuthService {
     return new AuthResult(true, AuthResultCode.Success, Token.hash);
   }
 
-  export async function RegisterUser(credentials: AuthCredentials, IP: string): Promise<AuthResult> {
-    if (credentials.username == undefined || credentials.password == undefined) return new AuthResult(false, RegisterResultCode.NullParameter);
+  export async function RegisterUser(credentials: AuthCredentials, IP: string): Promise<RegistrationResult> {
+    if (credentials.username == undefined || credentials.password == undefined) return new RegistrationResult(false, RegisterResultCode.NullParameter);
 
-     if (!TestUsernameLegal(credentials.username)) return new AuthResult(false, RegisterResultCode.UsernameFormat);
-     if (!TestPasswordLegal(credentials.password)) return new AuthResult(false, RegisterResultCode.PasswordFormat);
+     if (!TestUsernameLegal(credentials.username)) return new RegistrationResult(false, RegisterResultCode.UsernameFormat);
+     if (!TestPasswordLegal(credentials.password)) return new RegistrationResult(false, RegisterResultCode.PasswordFormat);
 
     const exist = await UserRepo.existsBy({ Username: credentials.username });
-    if (exist) return new AuthResult(false, RegisterResultCode.UserAlreadyExists);
+    if (exist) return new RegistrationResult(false, RegisterResultCode.UserAlreadyExists);
 
     const usr = new User();
     usr.IPAddress = IP;
@@ -71,7 +71,7 @@ export module AuthService {
     const res = await UserRepo.save(usr);
 
     const Token = await TokenManager.GenerateToken(res.UserID);
-    return new AuthResult(true, RegisterResultCode.Success, Token.hash);
+    return new RegistrationResult(true, RegisterResultCode.Success, Token.hash);
   }
 }
 
@@ -96,7 +96,6 @@ export class AuthResult {
     this.token = token;
   }
 }
-
 
 export class RegistrationResult {
   public ok: boolean;

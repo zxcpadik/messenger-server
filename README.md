@@ -46,6 +46,25 @@ User registration
             109 - InternalError
 ```
 ### Messages
+#### Client:Message:Push
+Push messages into chat
+```
+[POST] /api/v0/client/messages/push
+    Args: JSON {
+            chatid: bigint (ulong),
+            text: string (max: 512 chars)
+            options?: {/* RESERVED IN DEV*/}
+          }
+    Header: token, session
+    Return: JSON { ok: boolean, status: int }
+    Status: 200 - Success
+            201 - NullParameter
+            202 - NoAuth
+            203 - TextLenght
+            204 - ChatNotExist
+            205 - ChatNoAccess
+            209 - InternalError
+```
 #### Client:Message:Pull
 Pull messages from chat
 ```
@@ -59,29 +78,12 @@ Pull messages from chat
           }
     Header: token, session
     Return: JSON { ok: boolean, status: int, messages?: Message[] }
-    Status: 210 - Message Pull OK
-            211 - Auth invalid
-            212 - ChatID does not exist
-            213 - Not in chat
-            214 - Internal Error
-```
-#### Client:Message:Push
-Push messages into chat
-```
-[POST] /api/v0/client/messages/push
-    Args: JSON {
-            chatid: bigint (ulong),
-            text: string (max: 512 chars)
-            options?: {/* RESERVED IN DEV*/}
-          }
-    Header: token, session
-    Return: JSON { ok: boolean, status: int }
-    Status: 200 - Message Push OK
-            201 - Auth invalid
-            202 - ChatID does not exist
-            203 - Text too long
-            204 - Not in chat
-            205 - Internal Error
+    Status: 210 - Success
+            211 - NullParameter
+            212 - NoAuth
+            213 - ChatNotExist
+            214 - ChatNoAccess
+            219 - InternalError
 ```
 ### Chats
 #### Client:Chat:Get
@@ -93,9 +95,10 @@ Get all chats
           }
     Header: token, session
     Return: JSON { ok: boolean, status: int, chats?: Chat[] }
-    Status: 220 - Chats Get OK
-            221 - Auth invalid
-            222 - Internal Error
+    Status: 230 - Success
+            231 - NullParameter
+            232 - NoAuth
+            239 - InternalError
 ```
 #### Client:Chat:Create
 Create new chat
@@ -107,11 +110,11 @@ Create new chat
           }
     Header: token, session
     Return: JSON { ok: boolean, status: int, chat?: Chat }
-    Status: 230 - Chats Create OK
-            231 - Auth invalid
-            232 - Title too long
-            233 - User not exist
-            234 - Internal Error
+    Status: 240 - Success
+            241 - NullParameter
+            242 - NoAuth
+            243 - TitleFormat
+            249 - InternalError
 ```
 
 ## Objects

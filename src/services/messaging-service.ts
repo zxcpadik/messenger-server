@@ -4,6 +4,7 @@ import { ChatUser } from "../entities/chat-user";
 import { Message } from "../entities/message";
 import { TokenManager } from "./auth-service";
 import { ChatRepo, ChatUserRepo, MessageRepo, UserRepo } from "./db-service";
+import { CreateChatResultCode, GetUserChatsResultCode, MessagePullResultCode, MessagePushResultCode } from "../declarations/enums";
 
 
 export module MessagingService {
@@ -15,14 +16,16 @@ export module MessagingService {
     return await ChatUserRepo.findBy({ chatid: chatID || -1 });
   }
 
-  export async function PushMessage(token: string, text: string, chatID: number): Promise<number> {
+  export async function PushMessage(token?: string, text?: string, chatID?: number): Promise<MessagePushResult> {
+    if (token == undefined || text == undefined || chatID == undefined) return new MessagePushResult(false, MessagePushResultCode.NullParameter);
+
     const UserID = await TokenManager.AuthToken(token);
-    if (UserID == undefined) return 201;
-    if (text.length > 512 || text.length == 0) return 203;
+    if (UserID == undefined) return new MessagePushResult(false, MessagePushResultCode.NoAuth);
+    if (text.length > 512 || text.length == 0) return new MessagePushResult(false, MessagePushResultCode.TextLenght);
 
     const Chat = await GetChat(chatID);
-    if (Chat == null) return 202;
-    if (!(await Chat.IsUserAvailable(UserID))) return 204;
+    if (Chat == null) return new MessagePushResult(false, MessagePushResultCode.ChatNotExist);
+    if (!(await Chat.IsUserAvailable(UserID))) return new MessagePushResult(false, MessagePushResultCode.ChatNoAccess);
 
     const msgid = await Chat.GetMessagesCount();
     const msg = new Message();
@@ -32,15 +35,17 @@ export module MessagingService {
     msg.localmessageid = msgid;
     MessageRepo.save(msg);
 
-    return 200;
+    return new MessagePushResult(true, MessagePushResultCode.Success);
   }
-  export async function PullMessage(token: string, chatID?: number, offset?: number, count: number = 1): Promise<{msg: Message[], code: number}> {
+  export async function PullMessage(token?: string, chatID?: number, offset?: number, count: number = 1): Promise<MessagePullResult> {
+    if (token == undefined || chatID == undefined) return new MessagePullResult(false, MessagePullResultCode.NullParameter) 
+    
     const UserID = await TokenManager.AuthToken(token);
-    if (UserID == undefined) return {msg: [], code: 211};
+    if (UserID == undefined) return new MessagePullResult(false, MessagePullResultCode.NoAuth);
 
     const Chat = await GetChat(chatID);
-    if (Chat == null) return {msg: [], code: 212};
-    if (!(await Chat.IsUserAvailable(UserID))) return {msg: [], code: 213};
+    if (Chat == null) return new MessagePullResult(false, MessagePullResultCode.ChatNotExist);
+    if (!(await Chat.IsUserAvailable(UserID))) return new MessagePullResult(false, MessagePullResultCode.ChatNoAccess);
 
     const msgcount = await Chat.GetMessagesCount();
     if (offset == undefined) {
@@ -48,12 +53,14 @@ export module MessagingService {
     }
 
     const msgs = await MessageRepo.find({where: { chatid: chatID, localmessageid: And(MoreThanOrEqual(offset), LessThanOrEqual(offset + count))}, take: count});
-    return {msg: msgs, code: 210};
+    return new MessagePullResult(true, MessagePullResultCode.Success, msgs);
   }
 
-  export async function GetUserChats(token: string): Promise<{chats: Chat[], code: number}> {
+  export async function GetUserChats(token?: string): Promise<GetUserChatsResult> {
+    if (token == undefined) return new GetUserChatsResult(false, GetUserChatsResultCode.NullParameter);
+
     var UserID = await TokenManager.AuthToken(token);
-    if (UserID == undefined) return {chats: [], code: 211};
+    if (UserID == undefined) return new GetUserChatsResult(false, GetUserChatsResultCode.NoAuth);
 
     var chatsIDs = await ChatUserRepo.findBy({ userid: UserID });
     var chats: Chat[] = [];
@@ -64,19 +71,15 @@ export module MessagingService {
       if (c != null) chats.push(c);
     }
 
-    return {chats: chats, code: 210};
+    return new GetUserChatsResult(true, GetUserChatsResultCode.Success, chats);
   }
+  export async function CreateChat(token?: string, userIDs?: number[], title?: string): Promise<CreateChatResult> {
+    if (token == undefined || userIDs == undefined || title == undefined) return new CreateChatResult(false, CreateChatResultCode.NullParameter);
 
-  export async function CreateChat(token: string, userIDs: number[], title: string): Promise<{chat: Chat | undefined, code: number}> {
     var UserID = await TokenManager.AuthToken(token);
-    if (UserID == undefined) return { chat: undefined, code: 221 };
+    if (UserID == undefined) return new CreateChatResult(false, CreateChatResultCode.NoAuth);
 
-    if (title.length > 64 || title.length == 0) return { chat: undefined, code: 222 };
-
-    for (let uid of userIDs) {
-      var UserExists = await UserRepo.existsBy({ UserID: uid });
-      if (!UserExists) return {chat: undefined, code: 223};
-    }
+    if (title.length > 64 || title.length == 0) return new CreateChatResult(false, CreateChatResultCode.TitleFormat);
 
     var chat = new Chat();
     chat.creatorid = UserID;
@@ -86,10 +89,55 @@ export module MessagingService {
     
     ChatUserRepo.save({ chatid: chat.chatid, userid: UserID, joindate: new Date() });
     for (let uid of userIDs) {
+      if (!(await UserRepo.existsBy({ UserID: uid }))) continue;
       await ChatUserRepo.save({ chatid: chat.chatid, userid: uid, joindate: new Date() });
     }
 
     await chat.GetUsers();
-    return { chat, code: 220 }
+    return new CreateChatResult(true, CreateChatResultCode.Success, chat);
+  }
+}
+
+export class MessagePushResult {
+  public ok: boolean;
+  public code: number;
+
+  constructor (ok: boolean, code: number) {
+    this.ok = ok;
+    this.code = code;
+  }
+}
+export class MessagePullResult {
+  public ok: boolean;
+  public code: number;
+  public messages?: Message[];
+
+  constructor (ok: boolean, code: number, messages?: Message[]) {
+    this.ok = ok;
+    this.code = code;
+    this.messages = messages;
+  }
+}
+
+export class CreateChatResult {
+  public ok: boolean;
+  public code: number;
+  public chat?: Chat;
+
+  constructor (ok: boolean, code: number, chat?: Chat) {
+    this.ok = ok;
+    this.code = code;
+    this.chat = chat;
+  }
+}
+export class GetUserChatsResult {
+  public ok: boolean;
+  public code: number;
+  public chats?: Chat[];
+
+  constructor (ok: boolean, code: number, chats?: Chat[]) {
+    this.ok = ok;
+    this.code = code;
+    this.chats = chats;
   }
 }
