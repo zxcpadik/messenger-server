@@ -160,6 +160,6 @@ app.get('/', (req: Request, res: Response) => {
   res.send(`Server running.\n${new Date().toString()}`);
 })
 
-app.listen(port, () => {
+app.listen({ port: 8080, host: "0.0.0.0"}, () => {
   console.log(`[SERVER]: Server is running!`);
 });

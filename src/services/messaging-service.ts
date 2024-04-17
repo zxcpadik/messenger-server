@@ -60,6 +60,7 @@ export module MessagingService {
 
     for (var chatusr of chatsIDs) {
       var c = await ChatRepo.findOneBy({ chatid: chatusr.chatid })
+      await c?.GetUsers();
       if (c != null) chats.push(c);
     }
 
@@ -83,11 +84,12 @@ export module MessagingService {
     chat.isgroup = true;
     chat = await ChatRepo.save(chat);
     
-    ChatUserRepo.save({ chatid: chat.chatid, UserID: UserID });
+    ChatUserRepo.save({ chatid: chat.chatid, userid: UserID });
     for (let uid of userIDs) {
-      await ChatUserRepo.save({ chatid: chat.chatid, UserID: uid });
+      await ChatUserRepo.save({ chatid: chat.chatid, userid: uid });
     }
 
-    return {chat, code: 220}
+    await chat.GetUsers();
+    return { chat, code: 220 }
   }
 }
