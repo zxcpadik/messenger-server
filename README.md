@@ -148,6 +148,22 @@ Clear all message in chat
             264 - ChatNoAccess
             269 - InternalError
 ```
+#### Client:Chat:Info
+Get info about chat
+```
+[POST] /api/v0/client/chat/info
+    Args: JSON {
+            chatid: int
+          }
+    Header: token, session
+    Return: JSON { ok: boolean, status: int, info?: ChatInfoObj }
+    Status: 270 - Success
+            271 - NullParameter
+            272 - NoAuth
+            273 - ChatNotExist
+            274 - ChatNoAccess
+            279 - InternalError
+```
 
 ## Objects
 
@@ -163,7 +179,6 @@ Message {
   replyid: int - Reply UserID /*RESERVED IN DEV*/
 }
 ```
-
 #### Chat
 ```
 Chat {
@@ -175,6 +190,17 @@ Chat {
   isuser: boolean /*RESERVED IN DEV*/
   isgroup: boolean
 }
+```
+#### ChatInfo
+```
+ChatInfoObj {
+  title?: string
+  users?: number[]
+  messages?: number
+  creatorid?: number
+  creationdate?: Date
+}
+
 ```
 
 ## Variables

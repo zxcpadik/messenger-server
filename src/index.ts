@@ -1,19 +1,16 @@
-import express, { Express, Request, Response } from "express";
 import dotenv from "dotenv";
-import bodyParser from "body-parser";
 import "reflect-metadata"
 import './services/db-service'
+import express, { Express, Request, Response } from "express";
+import formData from "express-form-data";
+import os from "os";
 import { SessionManager } from "./services/session-manager";
 import { AuthCredentials, AuthService } from "./services/auth-service";
 import { MessagingService } from "./services/messaging-service";
-import formData from "express-form-data";
-import os from "os";
-import { Chat } from "./entities/chat";
 
 dotenv.config();
 
 const app: Express = express();
-const port = process.env.PORT || 8080;
 
 const formDataOptions = {
   uploadDir: os.tmpdir(),
@@ -180,6 +177,23 @@ app.post('/api/v0/client/chat/remove', async (req: Request, res: Response) => {
   const chatid = req.body["chatid"] as number | undefined;
 
   const apires = await MessagingService.RemoveChat(token, chatid);
+  if (process.env.DEBUG_MODE == "true") console.log(apires);
+  res.json(apires);
+});
+app.post('/api/v0/client/chat/info', async (req: Request, res: Response) => {
+  const IP = req.socket.remoteAddress || "";
+  const Hash = req.headers['session']?.toString() || "";
+  const Session = await SessionManager.GetSession(Hash, IP);
+
+  if (process.env.DEBUG_MODE == "true") console.log(`CHAT-REMOVE: ${IP}:${Hash}:${Session.IsDecayed() ? "BAD" : "OK"}`);
+  if (process.env.DEBUG_MODE == "true") console.log(req.body);
+
+  if (Session.IsDecayed()) return res.send("SESSION EXPIRED");
+
+  const token = req.headers['token']?.toString();
+  const chatid = req.body["chatid"] as number | undefined;
+
+  const apires = await MessagingService.ChatInfo(token, chatid);
   if (process.env.DEBUG_MODE == "true") console.log(apires);
   res.json(apires);
 });

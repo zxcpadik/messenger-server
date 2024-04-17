@@ -4,7 +4,7 @@ import { ChatUser } from "../entities/chat-user";
 import { Message } from "../entities/message";
 import { TokenManager } from "./auth-service";
 import { ChatRepo, ChatUserRepo, MessageRepo, UserRepo } from "./db-service";
-import { ClearChatResultCode, CreateChatResultCode, GetUserChatsResultCode, MessagePullResultCode, MessagePushResultCode, RemoveChatResultCode } from "../declarations/enums";
+import { ChatInfoResultCode, ClearChatResultCode, CreateChatResultCode, GetUserChatsResultCode, MessagePullResultCode, MessagePushResultCode, RemoveChatResultCode } from "../declarations/enums";
 
 
 export module MessagingService {
@@ -95,7 +95,6 @@ export module MessagingService {
     await chat.GetUsers();
     return new CreateChatResult(true, CreateChatResultCode.Success, chat);
   }
-
   export async function ClearChat(token?: string, chatid?: number): Promise<ClearChatResult> {
     if (token == undefined || chatid == undefined) return new ClearChatResult(false, ClearChatResultCode.NullParameter) 
     
@@ -112,7 +111,6 @@ export module MessagingService {
     
     return new ClearChatResult(true, ClearChatResultCode.Success, res.affected || 0);
   }
-
   export async function RemoveChat(token?: string, chatid?: number): Promise<RemoveChatResult> {
     if (token == undefined || chatid == undefined) return new RemoveChatResult(false, RemoveChatResultCode.NullParameter) 
     
@@ -136,6 +134,29 @@ export module MessagingService {
     });
     
     return new RemoveChatResult(true, RemoveChatResultCode.Success);
+  }
+  export async function ChatInfo(token?: string, chatid?: number): Promise<ChatInfoResult> {
+    if (token == undefined || chatid == undefined) return new ChatInfoResult(false, ChatInfoResultCode.NullParameter) 
+    
+    const UserID = await TokenManager.AuthToken(token);
+    if (UserID == undefined) return new ChatInfoResult(false, ChatInfoResultCode.NoAuth);
+  
+    const Chat = await GetChat(chatid);
+    if (Chat == null) return new ChatInfoResult(false, ChatInfoResultCode.ChatNotExist);
+    if (!(await Chat.IsUserAvailable(UserID))) return new ChatInfoResult(false, ChatInfoResultCode.ChatNoAccess);
+
+    await Chat.GetUsers();
+    const res = await MessageRepo.countBy({
+      chatid: chatid
+    });
+
+    var info = new ChatInfoObj();
+    info.creationdate = Chat.creationdate;
+    info.creatorid = Chat.creatorid;
+    info.messages = res;
+    info.title = Chat.title;
+    
+    return new ChatInfoResult(true, ChatInfoResultCode.Success, info);
   }
 }
 
@@ -182,7 +203,6 @@ export class GetUserChatsResult {
     this.chats = chats;
   }
 }
-
 export class ClearChatResult {
   public ok: boolean;
   public code: number;
@@ -202,4 +222,23 @@ export class RemoveChatResult {
     this.ok = ok;
     this.code = code;
   }
+}
+export class ChatInfoResult {
+  public ok: boolean;
+  public code: number;
+  public info?: ChatInfoObj;
+
+  constructor (ok: boolean, code: number, info?: ChatInfoObj) {
+    this.ok = ok;
+    this.code = code;
+    this.info = info;
+  }
+}
+
+export class ChatInfoObj {
+  public title?: string;
+  public users?: number[];
+  public messages?: number;
+  public creatorid?: number;
+  public creationdate?: Date;
 }

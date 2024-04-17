@@ -64,3 +64,11 @@ export enum RemoveChatResultCode {
   ChatNoAccess        = 264,
   InternalError       = 269
 }
+export enum ChatInfoResultCode {
+  Success             = 270,
+  NullParameter       = 271,
+  NoAuth              = 272,
+  ChatNotExist        = 273,
+  ChatNoAccess        = 274,
+  InternalError       = 279
+}
