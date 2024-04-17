@@ -44,7 +44,7 @@ export module MessagingService {
 
     const msgcount = await Chat.GetMessagesCount();
     if (offset == undefined) {
-      offset = msgcount - 1;
+      offset = msgcount - count;
     }
 
     const msgs = await MessageRepo.find({where: { chatid: chatID, localmessageid: And(MoreThanOrEqual(offset), LessThanOrEqual(offset + count))}, take: count});
@@ -84,9 +84,9 @@ export module MessagingService {
     chat.isgroup = true;
     chat = await ChatRepo.save(chat);
     
-    ChatUserRepo.save({ chatid: chat.chatid, userid: UserID });
+    ChatUserRepo.save({ chatid: chat.chatid, userid: UserID, joindate: new Date() });
     for (let uid of userIDs) {
-      await ChatUserRepo.save({ chatid: chat.chatid, userid: uid });
+      await ChatUserRepo.save({ chatid: chat.chatid, userid: uid, joindate: new Date() });
     }
 
     await chat.GetUsers();

@@ -48,7 +48,7 @@ app.post('/api/v0/user/auth', async (req: Request, res: Response) => {
   const Session = await SessionManager.GetSession(Hash, IP);
 
   if (process.env.DEBUG_MODE == "true") console.log(`AUTH: ${IP}:${Hash}:${Session.IsDecayed() ? "BAD" : "OK"}`);
-  if (process.env.DEBUG_MODE == "true") console.log(req.headers["content-type"]);
+  if (process.env.DEBUG_MODE == "true") console.log(req.body);
 
   if (Session.IsDecayed()) return res.send("SESSION EXPIRED");
 
@@ -82,15 +82,15 @@ app.post('/api/v0/client/messages/pull', async (req: Request, res: Response) => 
   const Hash = req.headers['session']?.toString() || "";
   const Session = await SessionManager.GetSession(Hash, IP);
 
-  if (process.env.DEBUG_MODE == "true") console.log(`REGISTER: ${IP}:${Hash}:${Session.IsDecayed() ? "BAD" : "OK"}`);
+  if (process.env.DEBUG_MODE == "true") console.log(`MSG-PULL: ${IP}:${Hash}:${Session.IsDecayed() ? "BAD" : "OK"}`);
   if (process.env.DEBUG_MODE == "true") console.log(req.body);
 
   if (Session.IsDecayed()) return res.send("SESSION EXPIRED");
 
   const token = req.headers['token']?.toString() || "";
-  const offset = req.body["options"]["username"] as number | undefined;
-  const count = req.body["options"]["password"] as number | undefined;
-  const chatid = req.body["password"] as number | undefined;
+  const offset = req.body["options"]?.["offset"] as number | undefined;
+  const count = req.body["options"]?.["count"] as number | undefined;
+  const chatid = req.body["chatid"] as number | undefined;
 
   const apires = await MessagingService.PullMessage(token, chatid, offset, count);
   if (process.env.DEBUG_MODE == "true") console.log(apires);
@@ -101,18 +101,19 @@ app.post('/api/v0/client/messages/push', async (req: Request, res: Response) => 
   const Hash = req.headers['session']?.toString() || "";
   const Session = await SessionManager.GetSession(Hash, IP);
 
-  if (process.env.DEBUG_MODE == "true") console.log(`REGISTER: ${IP}:${Hash}:${Session.IsDecayed() ? "BAD" : "OK"}`);
+  if (process.env.DEBUG_MODE == "true") console.log(`MSG-PUSH: ${IP}:${Hash}:${Session.IsDecayed() ? "BAD" : "OK"}`);
   if (process.env.DEBUG_MODE == "true") console.log(req.body);
 
   if (Session.IsDecayed()) return res.send("SESSION EXPIRED");
 
   const token = req.headers['token']?.toString();
   const text = req.body["text"] as string | undefined;
-  const chatid = req.body["password"] as number | undefined;
+  const chatid = req.body["chatid"] as number | undefined;
 
   const apires = await MessagingService.PushMessage(token || "", text || "", chatid || -1);
-  if (process.env.DEBUG_MODE == "true") console.log(apires);
-  res.json(apires);
+  const resj = { ok: apires == 200, code: apires };
+  if (process.env.DEBUG_MODE == "true") console.log(resj);
+  res.json(resj);
 });
 
 app.post('/api/v0/client/chat/create', async (req: Request, res: Response) => {
@@ -120,7 +121,7 @@ app.post('/api/v0/client/chat/create', async (req: Request, res: Response) => {
   const Hash = req.headers['session']?.toString() || "";
   const Session = await SessionManager.GetSession(Hash, IP);
 
-  if (process.env.DEBUG_MODE == "true") console.log(`REGISTER: ${IP}:${Hash}:${Session.IsDecayed() ? "BAD" : "OK"}`);
+  if (process.env.DEBUG_MODE == "true") console.log(`CHAT-CREATE: ${IP}:${Hash}:${Session.IsDecayed() ? "BAD" : "OK"}`);
   if (process.env.DEBUG_MODE == "true") console.log(req.body);
 
   if (Session.IsDecayed()) return res.send("SESSION EXPIRED");
@@ -138,7 +139,7 @@ app.post('/api/v0/client/chat/get', async (req: Request, res: Response) => {
   const Hash = req.headers['session']?.toString() || "";
   const Session = await SessionManager.GetSession(Hash, IP);
 
-  if (process.env.DEBUG_MODE == "true") console.log(`REGISTER: ${IP}:${Hash}:${Session.IsDecayed() ? "BAD" : "OK"}`);
+  if (process.env.DEBUG_MODE == "true") console.log(`CHAT-GET: ${IP}:${Hash}:${Session.IsDecayed() ? "BAD" : "OK"}`);
   if (process.env.DEBUG_MODE == "true") console.log(req.body);
 
   if (Session.IsDecayed()) return res.send("SESSION EXPIRED");
@@ -150,9 +151,11 @@ app.post('/api/v0/client/chat/get', async (req: Request, res: Response) => {
 });
 
 app.post(['/api', '/api/*'], async (req: Request, res: Response) => {
+  console.log(`NOAPI: ${req.url}`);
   res.json({ ok: false, status: 0 });
 });
 app.get(['/api', '/api/*'], async (req: Request, res: Response) => {
+  console.log(`NOAPI: ${req.url}`);
   res.json({ ok: false, status: 0 });
 });
 

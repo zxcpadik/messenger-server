@@ -70,7 +70,7 @@ Push messages into chat
             options?: {/* RESERVED IN DEV*/}
           }
     Header: token, session
-    Return: JSON { ok: boolean, status: int, messages?: Message[] }
+    Return: JSON { ok: boolean, status: int }
     Status: 200 - Message Push OK
             201 - Auth invalid
             202 - ChatID does not exist
@@ -88,9 +88,9 @@ Get all chats
           }
     Header: token, session
     Return: JSON { ok: boolean, status: int, chats?: Chat[] }
-    Status: 210 - Chats Get OK
-            211 - Auth invalid
-            212 - Internal Error
+    Status: 220 - Chats Get OK
+            221 - Auth invalid
+            222 - Internal Error
 ```
 #### Client:Chat:Create
 Create new chat
@@ -102,11 +102,11 @@ Create new chat
           }
     Header: token, session
     Return: JSON { ok: boolean, status: int, chat?: Chat }
-    Status: 220 - Chats Create OK
-            221 - Auth invalid
-            222 - Title too long
-            223 - User not exist
-            224 - Internal Error
+    Status: 230 - Chats Create OK
+            231 - Auth invalid
+            232 - Title too long
+            233 - User not exist
+            234 - Internal Error
 ```
 
 ## Objects
