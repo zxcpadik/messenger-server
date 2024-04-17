@@ -121,6 +121,18 @@ app.post('/api/v0/client/chat/create', async (req: Request, res: Response) => {
   const apires = await MessagingService.CreateChat(token, userIDs, title);
   res.json({ ok: apires.code == 220, code: apires.code, chat: apires.chat});
 });
+app.post('/api/v0/client/chat/get', async (req: Request, res: Response) => {
+  const IP = req.socket.remoteAddress || "";
+  const Hash = req.headers['session']?.toString() || "";
+  const Session = await SessionManager.GetSession(Hash, IP);
+
+  if (Session.IsDecayed()) return res.send("SESSION EXPIRED");
+
+  const token = req.headers['token']?.toString() || "";
+
+  const apires = await MessagingService.GetUserChats(token);
+  res.json({ ok: apires.code == 210, code: apires.code, chat: apires.chats});
+});
 
 app.post(['/api', '/api/*'], async (req: Request, res: Response) => {
   res.json({ ok: false, status: 0 });
