@@ -114,11 +114,13 @@ Create new chat
 #### Message
 ```
 Message {
-  id: int - ID of message (chat local)
+  messageid: int - Global ID of message
+  localmessageid: int - Local ID of message
+  chatid: int - ID of chat
   text: string
-  from: int - Sender UserID    
-  time: bigint (ulong) - Message send time as UNIX with Time Zone
-  replyid?: int - Reply UserID /*RESERVED IN DEV*/
+  senderid: int - Sender UserID    
+  sentdate: date (UNIX) - Message send time as UNIX
+  replyid: int - Reply UserID /*RESERVED IN DEV*/
 }
 ```
 

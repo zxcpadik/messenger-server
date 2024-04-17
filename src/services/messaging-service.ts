@@ -26,10 +26,10 @@ export module MessagingService {
 
     const msgid = await Chat.GetMessagesCount();
     const msg = new Message();
-    msg.ChatID = chatID;
-    msg.Text = text;
-    msg.SenderID = UserID;
-    msg.LocalMessageID = msgid;
+    msg.chatid = chatID;
+    msg.text = text;
+    msg.senderid = UserID;
+    msg.localmessageid = msgid;
     MessageRepo.save(msg);
 
     return 200;
@@ -47,7 +47,7 @@ export module MessagingService {
       offset = msgcount - 1;
     }
 
-    const msgs = await MessageRepo.find({where: { ChatID: chatID, LocalMessageID: And(MoreThanOrEqual(offset), LessThanOrEqual(offset + count))}, take: count});
+    const msgs = await MessageRepo.find({where: { chatid: chatID, localmessageid: And(MoreThanOrEqual(offset), LessThanOrEqual(offset + count))}, take: count});
     return {msg: msgs, code: 210};
   }
 

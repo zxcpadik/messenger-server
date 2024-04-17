@@ -3,23 +3,23 @@ import { Entity, PrimaryColumn, Column, PrimaryGeneratedColumn } from "typeorm";
 @Entity()
 export class Message {
     @PrimaryGeneratedColumn()
-    public MessageID: number = 0;
+    public messageid: number = 0;
 
     @Column()
-    public LocalMessageID: number = 0;
+    public localmessageid: number = 0;
 
     @Column()
-    public ChatID: number = 0;
+    public chatid: number = 0;
 
     @Column({type: "text" })
-    public Text: string = "";
+    public text: string = "";
 
     @Column({ type: "timestamp" })
-    public SentDate: Date = new Date(new Date().getTime() - (new Date().getTimezoneOffset() * 60000));
+    public sentdate: Date = new Date();
 
     @Column()
-    public SenderID: number = 0;
+    public senderid: number = 0;
 
     @Column()
-    public ReplyID: number = -1;
+    public replyid: number = -1;
 }

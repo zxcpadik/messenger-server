@@ -37,6 +37,6 @@ export class Chat {
     }
 
     public async GetMessagesCount() {
-      return await MessageRepo.countBy({ ChatID: this.chatid });
+      return await MessageRepo.countBy({ chatid: this.chatid });
     }
 }
