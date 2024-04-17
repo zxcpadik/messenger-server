@@ -87,3 +87,25 @@ export enum SetChatInfoResultCode {
   DescriptionFormat   = 358,
   InternalError       = 359
 }
+export enum AddUserResultCode {
+  Success             = 360,
+  NullParameter       = 361,
+  NoAuth              = 362,
+  ChatNotExist        = 363,
+  ChatNoAccess        = 364,
+  UserNotFound        = 365,
+  AlradyInGroup       = 366,
+  NoPermission        = 367,
+  InternalError       = 369
+}
+export enum RemoveUserResultCode {
+  Success             = 370,
+  NullParameter       = 371,
+  NoAuth              = 372,
+  ChatNotExist        = 373,
+  ChatNoAccess        = 374,
+  UserNotFound        = 375,
+  UserNotInGroup      = 376,
+  NoPermission        = 377,
+  InternalError       = 379
+}

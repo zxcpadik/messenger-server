@@ -174,6 +174,7 @@ Set chat title or description
 ```
 [POST] /api/v0/client/chat/setinfo
     Args: JSON {
+            chatid: int
             title?: string
             description?: string
           }
@@ -188,6 +189,46 @@ Set chat title or description
             357 - TitleFormat
             358 - DescriptionFormat
             359 - InternalError
+```
+#### Client:Chat:AddUser
+Add user into chat
+```
+[POST] /api/v0/client/chat/adduser
+    Args: JSON {
+            chatid: int
+            userid: int
+          }
+    Header: token, session
+    Return: JSON { ok: boolean, status: int }
+    Status: 360 - Success
+            361 - NullParameter
+            362 - NoAuth
+            363 - ChatNotExist
+            364 - ChatNoAccess
+            365 - UserNotFound
+            367 - AlradyInGroup
+            368 - NoPermission
+            369 - InternalError
+```
+#### Client:Chat:RemoveUser
+Remove user from chat
+```
+[POST] /api/v0/client/chat/removeuser
+    Args: JSON {
+            chatid: int
+            userid: int
+          }
+    Header: token, session
+    Return: JSON { ok: boolean, status: int }
+    Status: 370 - Success
+            371 - NullParameter
+            372 - NoAuth
+            373 - ChatNotExist
+            374 - ChatNoAccess
+            375 - UserNotFound
+            377 - UserNotInGroup
+            378 - NoPermission
+            379 - InternalError
 ```
 
 ## Objects

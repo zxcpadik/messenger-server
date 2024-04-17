@@ -4,7 +4,7 @@ import { ChatUser } from "../entities/chat-user";
 import { Message } from "../entities/message";
 import { TokenManager } from "./auth-service";
 import { ChatRepo, ChatUserRepo, MessageRepo, UserRepo } from "./db-service";
-import { ChatInfoResultCode, ClearChatResultCode, CreateChatResultCode, GetUserChatsResultCode, MessagePullResultCode, MessagePushResultCode, RemoveChatResultCode, SetChatInfoResultCode } from "../declarations/enums";
+import { AddUserResultCode, ChatInfoResultCode, ClearChatResultCode, CreateChatResultCode, GetUserChatsResultCode, MessagePullResultCode, MessagePushResultCode, RemoveChatResultCode, RemoveUserResultCode, SetChatInfoResultCode } from "../declarations/enums";
 
 
 export module MessagingService {
@@ -181,6 +181,40 @@ export module MessagingService {
     
     return new SetChatInfoResult(true, SetChatInfoResultCode.Success);
   }
+  export async function AddUser(token?: string, chatid?: number, userid?: number): Promise<AddUserResult> {
+    if (token == undefined || chatid == undefined || userid == undefined) return new AddUserResult(false, AddUserResultCode.NullParameter) 
+    
+    const UserID = await TokenManager.AuthToken(token);
+    if (UserID == undefined) return new AddUserResult(false, AddUserResultCode.NoAuth);
+  
+    const Chat = await GetChat(chatid);
+    if (Chat == null) return new AddUserResult(false, AddUserResultCode.ChatNotExist);
+    if (!(await Chat.IsUserAvailable(UserID))) return new AddUserResult(false, AddUserResultCode.ChatNoAccess);
+
+    if (!(await UserRepo.existsBy({ UserID: userid }))) return new AddUserResult(false, AddUserResultCode.UserNotFound);
+    if (await ChatUserRepo.existsBy({ chatid: chatid, userid: userid })) return new AddUserResult(false, AddUserResultCode.AlradyInGroup);
+
+    await ChatUserRepo.save({ chatid: chatid, userid: userid });
+    
+    return new AddUserResult(true, AddUserResultCode.Success);
+  }
+  export async function RemoveUser(token?: string, chatid?: number, userid?: number): Promise<RemoveUserResult> {
+    if (token == undefined || chatid == undefined || userid == undefined) return new RemoveUserResult(false, RemoveUserResultCode.NullParameter) 
+    
+    const UserID = await TokenManager.AuthToken(token);
+    if (UserID == undefined) return new RemoveUserResult(false, RemoveUserResultCode.NoAuth);
+  
+    const Chat = await GetChat(chatid);
+    if (Chat == null) return new RemoveUserResult(false, RemoveUserResultCode.ChatNotExist);
+    if (!(await Chat.IsUserAvailable(UserID))) return new RemoveUserResult(false, RemoveUserResultCode.ChatNoAccess);
+
+    if (!(await UserRepo.existsBy({ UserID: userid }))) return new RemoveUserResult(false, RemoveUserResultCode.UserNotFound);
+    if (!(await ChatUserRepo.existsBy({ chatid: chatid, userid: userid }))) return new RemoveUserResult(false, RemoveUserResultCode.UserNotInGroup);
+
+    await ChatUserRepo.delete({ chatid: chatid, userid: userid });
+    
+    return new RemoveUserResult(true, RemoveUserResultCode.Success);
+  }
 }
 
 export class MessagePushResult {
@@ -258,6 +292,24 @@ export class ChatInfoResult {
   }
 }
 export class SetChatInfoResult {
+  public ok: boolean;
+  public code: number;
+
+  constructor (ok: boolean, code: number) {
+    this.ok = ok;
+    this.code = code;
+  }
+}
+export class AddUserResult {
+  public ok: boolean;
+  public code: number;
+
+  constructor (ok: boolean, code: number) {
+    this.ok = ok;
+    this.code = code;
+  }
+}
+export class RemoveUserResult {
   public ok: boolean;
   public code: number;
 
