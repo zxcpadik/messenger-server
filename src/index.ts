@@ -29,14 +29,14 @@ app.use(express.urlencoded({ extended: true }));
 
 app.get('/api/v0/session/open', async (req: Request, res: Response) => {
   const IP = req.socket.remoteAddress;
-  console.log(`SESSION ${IP}`);
+  if (process.env.DEBUG_MODE == "true") console.log(`SESSION ${IP}`);
   if (!IP) return res.send();
   res.send((await SessionManager.OpenNewSession(IP)).Hash);
 });
 app.get('/api/v0/session/pulse', async (req: Request, res: Response) => {
   const IP = req.socket.remoteAddress;
   const Hash = req.headers['session']?.toString() || "";
-  console.log(`PULSE ${IP}:${Hash}`);
+  if (process.env.DEBUG_MODE == "true") console.log(`PULSE ${IP}:${Hash}`); // DEBUG
   if (!IP || !Hash) return res.send("0");
   var s = await SessionManager.RenewSession(Hash, IP);
   res.send(s.IsDecayed() ? "0" : "1");
@@ -47,8 +47,8 @@ app.post('/api/v0/user/auth', async (req: Request, res: Response) => {
   const Hash = req.headers['session']?.toString() || "";
   const Session = await SessionManager.GetSession(Hash, IP);
 
-  console.log(`AUTH: ${IP}:${Hash}:${Session.IsDecayed() ? "BAD" : "OK"}`);
-  console.log(req.headers["content-type"]);
+  if (process.env.DEBUG_MODE == "true") console.log(`AUTH: ${IP}:${Hash}:${Session.IsDecayed() ? "BAD" : "OK"}`);
+  if (process.env.DEBUG_MODE == "true") console.log(req.headers["content-type"]);
 
   if (Session.IsDecayed()) return res.send("SESSION EXPIRED");
 
@@ -64,8 +64,8 @@ app.post('/api/v0/user/register', async (req: Request, res: Response) => {
   const Hash = req.headers['session']?.toString() || "";
   const Session = await SessionManager.GetSession(Hash, IP);
 
-  console.log(`REGISTER: ${IP}:${Hash}:${Session.IsDecayed() ? "BAD" : "OK"}`);
-  console.log(req.body);
+  if (process.env.DEBUG_MODE == "true") console.log(`REGISTER: ${IP}:${Hash}:${Session.IsDecayed() ? "BAD" : "OK"}`);
+  if (process.env.DEBUG_MODE == "true") console.log(req.body);
 
   if (Session.IsDecayed()) return res.send("SESSION EXPIRED");
 
@@ -73,7 +73,7 @@ app.post('/api/v0/user/register', async (req: Request, res: Response) => {
   const password = req.body["password"] as string | undefined;
 
   const apires = await AuthService.RegisterUser(new AuthCredentials(username, password), IP);
-  console.log(apires);
+  if (process.env.DEBUG_MODE == "true") console.log(apires);
   res.json(apires);
 });
 
@@ -81,6 +81,9 @@ app.post('/api/v0/client/messages/pull', async (req: Request, res: Response) => 
   const IP = req.socket.remoteAddress || "";
   const Hash = req.headers['session']?.toString() || "";
   const Session = await SessionManager.GetSession(Hash, IP);
+
+  if (process.env.DEBUG_MODE == "true") console.log(`REGISTER: ${IP}:${Hash}:${Session.IsDecayed() ? "BAD" : "OK"}`);
+  if (process.env.DEBUG_MODE == "true") console.log(req.body);
 
   if (Session.IsDecayed()) return res.send("SESSION EXPIRED");
 
@@ -90,12 +93,16 @@ app.post('/api/v0/client/messages/pull', async (req: Request, res: Response) => 
   const chatid = req.body["password"] as number | undefined;
 
   const apires = await MessagingService.PullMessage(token, chatid, offset, count);
+  if (process.env.DEBUG_MODE == "true") console.log(apires);
   res.json(apires);
 });
 app.post('/api/v0/client/messages/push', async (req: Request, res: Response) => {
   const IP = req.socket.remoteAddress || "";
   const Hash = req.headers['session']?.toString() || "";
   const Session = await SessionManager.GetSession(Hash, IP);
+
+  if (process.env.DEBUG_MODE == "true") console.log(`REGISTER: ${IP}:${Hash}:${Session.IsDecayed() ? "BAD" : "OK"}`);
+  if (process.env.DEBUG_MODE == "true") console.log(req.body);
 
   if (Session.IsDecayed()) return res.send("SESSION EXPIRED");
 
@@ -104,6 +111,7 @@ app.post('/api/v0/client/messages/push', async (req: Request, res: Response) => 
   const chatid = req.body["password"] as number | undefined;
 
   const apires = await MessagingService.PushMessage(token || "", text || "", chatid || -1);
+  if (process.env.DEBUG_MODE == "true") console.log(apires);
   res.json(apires);
 });
 
@@ -112,6 +120,9 @@ app.post('/api/v0/client/chat/create', async (req: Request, res: Response) => {
   const Hash = req.headers['session']?.toString() || "";
   const Session = await SessionManager.GetSession(Hash, IP);
 
+  if (process.env.DEBUG_MODE == "true") console.log(`REGISTER: ${IP}:${Hash}:${Session.IsDecayed() ? "BAD" : "OK"}`);
+  if (process.env.DEBUG_MODE == "true") console.log(req.body);
+
   if (Session.IsDecayed()) return res.send("SESSION EXPIRED");
 
   const token = req.headers['token']?.toString() || "";
@@ -119,6 +130,7 @@ app.post('/api/v0/client/chat/create', async (req: Request, res: Response) => {
   const title = req.body["title"] as string;
 
   const apires = await MessagingService.CreateChat(token, userIDs, title);
+  if (process.env.DEBUG_MODE == "true") console.log(apires);
   res.json({ ok: apires.code == 220, code: apires.code, chat: apires.chat});
 });
 app.post('/api/v0/client/chat/get', async (req: Request, res: Response) => {
@@ -126,11 +138,14 @@ app.post('/api/v0/client/chat/get', async (req: Request, res: Response) => {
   const Hash = req.headers['session']?.toString() || "";
   const Session = await SessionManager.GetSession(Hash, IP);
 
+  if (process.env.DEBUG_MODE == "true") console.log(`REGISTER: ${IP}:${Hash}:${Session.IsDecayed() ? "BAD" : "OK"}`);
+  if (process.env.DEBUG_MODE == "true") console.log(req.body);
+
   if (Session.IsDecayed()) return res.send("SESSION EXPIRED");
 
   const token = req.headers['token']?.toString() || "";
-
   const apires = await MessagingService.GetUserChats(token);
+  if (process.env.DEBUG_MODE == "true") console.log(apires);
   res.json({ ok: apires.code == 210, code: apires.code, chat: apires.chats});
 });
 
