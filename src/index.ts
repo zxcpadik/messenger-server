@@ -2,6 +2,7 @@ import express, { Express, Request, Response } from "express";
 import dotenv from "dotenv";
 import bodyParser from "body-parser";
 import "reflect-metadata"
+import './services/db-service'
 import { SessionManager } from "./services/session-manager";
 
 dotenv.config();

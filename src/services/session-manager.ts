@@ -1,11 +1,9 @@
 import { Session } from "../entities/session";
 import { generate } from "randomstring"
-import { DBSource } from "./db-service";
+import { SessionRepo } from "./db-service";
 
 
 export module SessionManager {
-    const SessionRepo = DBSource.getRepository(Session);
-
     export async function OpenNewSession(ip: string) {
         var s = new Session();
         s.IPAddress = ip;

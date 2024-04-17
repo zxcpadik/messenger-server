@@ -1,12 +1,10 @@
 import { generate } from "randomstring";
 import { Token } from "../entities/token";
 import { User } from "../entities/user";
-import { DBSource } from "./db-service";
+import { TokenRepo, UserRepo } from "./db-service";
 
 
 export module TokenManager {
-  const TokenRepo = DBSource.getRepository(Token);
-
   export async function AuthToken(token?: string): Promise<number | undefined> {
     const Token = await TokenRepo.findOneBy({ hash: token });
     if (Token == null) return;
@@ -24,8 +22,6 @@ export module TokenManager {
 }
 
 export module AuthService {
-  const UserRepo = DBSource.getRepository(User);
-
   export async function AuthUser(credentials: AuthCredentials): Promise<AuthResult> {
     const usr = await UserRepo.findOneBy({ Username: credentials.username });
     if (usr == null) return new AuthResult(false, 102);

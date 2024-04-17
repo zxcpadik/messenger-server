@@ -21,7 +21,7 @@ Keep session online
 User authorization
 ```
 [POST] /api/v0/user/auth
-    Args: JSON { username: string, password: AES(password, key: session) }
+    Args: JSON { username: string, password: string }
     Header: session
     Return: JSON { ok: boolean, status: int, token?: string }
     Status: 100 - Auth OK
@@ -33,7 +33,7 @@ User authorization
 User registration
 ```
 [POST] /api/v0/user/register
-    Args: JSON { username: string, password: AES(password, key: session) }
+    Args: JSON { username: string, password: string }
     Return: JSON { ok: boolean, status: int, token?: string }
     Status: 110 - Register OK
             111 - Bad Format
@@ -88,9 +88,9 @@ Get all chats
         }
     Header: token
     Return: JSON { ok: boolean, status: int, chats?: Chat[] }
-    Status: 200 - Chats Get OK
-            201 - Auth invalid
-            202 - Internal Error
+    Status: 210 - Chats Get OK
+            211 - Auth invalid
+            212 - Internal Error
 ```
 #### Client:Chat:Create
 Create new chat
@@ -102,10 +102,11 @@ Create new chat
         }
     Header: token
     Return: JSON { ok: boolean, status: int, chat?: Chat }
-    Status: 200 - Chats Create OK
-            201 - Auth invalid
-            202 - Title too long
-            203 - Internal Error
+    Status: 220 - Chats Create OK
+            221 - Auth invalid
+            222 - Title too long
+            223 - User not exist
+            224 - Internal Error
 ```
 
 ## Objects
