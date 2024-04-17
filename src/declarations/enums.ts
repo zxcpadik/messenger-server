@@ -24,6 +24,7 @@ export enum MessagePushResultCode {
   TextLenght          = 203,
   ChatNotExist        = 204,
   ChatNoAccess        = 205,
+  NoPermission        = 206,
   InternalError       = 209
 }
 export enum MessagePullResultCode {
@@ -36,39 +37,41 @@ export enum MessagePullResultCode {
 }
 
 export enum GetUserChatsResultCode {
-  Success             = 230,
-  NullParameter       = 231,
-  NoAuth              = 232,
-  InternalError       = 239
+  Success             = 300,
+  NullParameter       = 301,
+  NoAuth              = 302,
+  InternalError       = 309
 }
 export enum CreateChatResultCode {
-  Success             = 240,
-  NullParameter       = 241,
-  NoAuth              = 242,
-  TitleFormat         = 243,
-  InternalError       = 249
+  Success             = 310,
+  NullParameter       = 311,
+  NoAuth              = 312,
+  TitleFormat         = 313,
+  InternalError       = 319
 }
 export enum ClearChatResultCode {
-  Success             = 250,
-  NullParameter       = 251,
-  NoAuth              = 252,
-  ChatNotExist        = 253,
-  ChatNoAccess        = 254,
-  InternalError       = 259
+  Success             = 320,
+  NullParameter       = 321,
+  NoAuth              = 322,
+  ChatNotExist        = 323,
+  ChatNoAccess        = 324,
+  NoPermission        = 325,
+  InternalError       = 329
 }
 export enum RemoveChatResultCode {
-  Success             = 260,
-  NullParameter       = 261,
-  NoAuth              = 262,
-  ChatNotExist        = 263,
-  ChatNoAccess        = 264,
-  InternalError       = 269
+  Success             = 330,
+  NullParameter       = 331,
+  NoAuth              = 332,
+  ChatNotExist        = 333,
+  ChatNoAccess        = 334,
+  NoPermission        = 335,
+  InternalError       = 339
 }
 export enum ChatInfoResultCode {
-  Success             = 270,
-  NullParameter       = 271,
-  NoAuth              = 272,
-  ChatNotExist        = 273,
-  ChatNoAccess        = 274,
-  InternalError       = 279
+  Success             = 340,
+  NullParameter       = 341,
+  NoAuth              = 342,
+  ChatNotExist        = 343,
+  ChatNoAccess        = 344,
+  InternalError       = 349
 }

@@ -63,6 +63,7 @@ Push messages into chat
             203 - TextLenght
             204 - ChatNotExist
             205 - ChatNoAccess
+            206 - NoPermission
             209 - InternalError
 ```
 #### Client:Message:Pull
@@ -95,10 +96,10 @@ Get all chats
           }
     Header: token, session
     Return: JSON { ok: boolean, status: int, chats?: Chat[] }
-    Status: 230 - Success
-            231 - NullParameter
-            232 - NoAuth
-            239 - InternalError
+    Status: 300 - Success
+            301 - NullParameter
+            302 - NoAuth
+            309 - InternalError
 ```
 #### Client:Chat:Create
 Create new chat
@@ -110,11 +111,11 @@ Create new chat
           }
     Header: token, session
     Return: JSON { ok: boolean, status: int, chat?: Chat }
-    Status: 240 - Success
-            241 - NullParameter
-            242 - NoAuth
-            243 - TitleFormat
-            249 - InternalError
+    Status: 310 - Success
+            311 - NullParameter
+            312 - NoAuth
+            313 - TitleFormat
+            319 - InternalError
 ```
 #### Client:Chat:Clear
 Clear all message in chat
@@ -125,12 +126,13 @@ Clear all message in chat
           }
     Header: token, session
     Return: JSON { ok: boolean, status: int, affected: int }
-    Status: 250 - Success
-            251 - NullParameter
-            252 - NoAuth
-            253 - ChatNotExist
-            254 - ChatNoAccess
-            259 - InternalError
+    Status: 320 - Success
+            321 - NullParameter
+            322 - NoAuth
+            323 - ChatNotExist
+            324 - ChatNoAccess
+            325 - NoPermission
+            329 - InternalError
 ```
 #### Client:Chat:Remove
 Remove chat
@@ -141,12 +143,13 @@ Remove chat
           }
     Header: token, session
     Return: JSON { ok: boolean, status: int }
-    Status: 260 - Success
-            261 - NullParameter
-            262 - NoAuth
-            263 - ChatNotExist
-            264 - ChatNoAccess
-            269 - InternalError
+    Status: 330 - Success
+            331 - NullParameter
+            332 - NoAuth
+            333 - ChatNotExist
+            334 - ChatNoAccess
+            335 - NoPermission
+            339 - InternalError
 ```
 #### Client:Chat:Info
 Get info about chat
@@ -157,16 +160,15 @@ Get info about chat
           }
     Header: token, session
     Return: JSON { ok: boolean, status: int, info?: ChatInfoObj }
-    Status: 270 - Success
-            271 - NullParameter
-            272 - NoAuth
-            273 - ChatNotExist
-            274 - ChatNoAccess
-            279 - InternalError
+    Status: 340 - Success
+            341 - NullParameter
+            342 - NoAuth
+            343 - ChatNotExist
+            344 - ChatNoAccess
+            349 - InternalError
 ```
 
 ## Objects
-
 #### Message
 ```
 Message {
@@ -177,6 +179,7 @@ Message {
   senderid: int - Sender UserID    
   sentdate: date (UNIX) - Message send time as UNIX
   replyid: int - Reply UserID /*RESERVED IN DEV*/
+  flag: int - /*RESERVED IN DEV*/
 }
 ```
 #### Chat
