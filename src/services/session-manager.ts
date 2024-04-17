@@ -7,7 +7,7 @@ export module SessionManager {
     export async function OpenNewSession(ip: string) {
         var s = new Session();
         s.IPAddress = ip;
-        s.Hash = generate(32);
+        s.Hash = generate({ length: 32, charset: 'hex'});
         s.Renew();
         return await SessionRepo.save(s);
     }

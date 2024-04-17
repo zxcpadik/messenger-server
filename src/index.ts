@@ -4,6 +4,7 @@ import bodyParser from "body-parser";
 import "reflect-metadata"
 import './services/db-service'
 import { SessionManager } from "./services/session-manager";
+import { AuthCredentials, AuthService } from "./services/auth-service";
 
 dotenv.config();
 
@@ -29,10 +30,26 @@ app.post('/api/v0/user/auth', async (req: Request, res: Response) => {
   const Hash = req.headers['session']?.toString() || "";
   const Session = await SessionManager.GetSession(Hash, IP);
 
-  if (Session.IsDecayed()) return res.json();
+  if (Session.IsDecayed()) return res.send("SESSION EXPIRED");
 
+  const username = req.body["username"] as string | undefined;
+  const password = req.body["password"] as string | undefined;
 
-  // AUTH
+  const apires = await AuthService.AuthUser(new AuthCredentials(username, password));
+  res.json(apires);
+});
+app.post('/api/v0/user/register', async (req: Request, res: Response) => {
+  const IP = req.socket.remoteAddress || "";
+  const Hash = req.headers['session']?.toString() || "";
+  const Session = await SessionManager.GetSession(Hash, IP);
+
+  if (Session.IsDecayed()) return res.send("SESSION EXPIRED");
+
+  const username = req.body["username"] as string | undefined;
+  const password = req.body["password"] as string | undefined;
+
+  const apires = await AuthService.RegisterUser(new AuthCredentials(username, password), IP);
+  res.json(apires);
 });
 
 
@@ -44,7 +61,7 @@ app.get(['/api', '/api/*'], async (req: Request, res: Response) => {
 });
 
 app.get('/', (req: Request, res: Response) => {
-  res.send("АаААааАААаАаАаааАаАаАааАа чооооо");
+  res.send(`Server running.\n${new Date().toString()}`);
 })
 
 app.listen(port, () => {
