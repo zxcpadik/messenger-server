@@ -8,12 +8,11 @@ import { CreateChatResultCode, GetUserChatsResultCode, MessagePullResultCode, Me
 
 
 export module MessagingService {
-  export async function GetChat(chatID?: number) {
-    return await ChatRepo.findOneBy({ chatid: chatID || -1 });
+  export function GetChat(chatID?: number) {
+    return ChatRepo.findOneBy({ chatid: chatID || -1 });
   }
-
-  export async function GetUsersChat(chatID?: number) {
-    return await ChatUserRepo.findBy({ chatid: chatID || -1 });
+  export function GetUsersChat(chatID?: number) {
+    return ChatUserRepo.findBy({ chatid: chatID || -1 });
   }
 
   export async function PushMessage(token?: string, text?: string, chatID?: number): Promise<MessagePushResult> {
