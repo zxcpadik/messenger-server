@@ -8,7 +8,6 @@ export enum AuthResultCode {
   PasswordIncorrect   = 105,
   InternalError       = 109
 }
-
 export enum RegisterResultCode {
   Success             = 110,
   NullParameter       = 111,
@@ -27,7 +26,6 @@ export enum MessagePushResultCode {
   ChatNoAccess        = 205,
   InternalError       = 209
 }
-
 export enum MessagePullResultCode {
   Success             = 210,
   NullParameter       = 211,
@@ -43,7 +41,6 @@ export enum GetUserChatsResultCode {
   NoAuth              = 232,
   InternalError       = 239
 }
-
 export enum CreateChatResultCode {
   Success             = 240,
   NullParameter       = 241,
@@ -51,7 +48,6 @@ export enum CreateChatResultCode {
   TitleFormat         = 243,
   InternalError       = 249
 }
-
 export enum ClearChatResultCode {
   Success             = 250,
   NullParameter       = 251,
@@ -59,4 +55,12 @@ export enum ClearChatResultCode {
   ChatNotExist        = 253,
   ChatNoAccess        = 254,
   InternalError       = 259
+}
+export enum RemoveChatResultCode {
+  Success             = 260,
+  NullParameter       = 261,
+  NoAuth              = 262,
+  ChatNotExist        = 263,
+  ChatNoAccess        = 264,
+  InternalError       = 269
 }

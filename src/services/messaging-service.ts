@@ -4,7 +4,7 @@ import { ChatUser } from "../entities/chat-user";
 import { Message } from "../entities/message";
 import { TokenManager } from "./auth-service";
 import { ChatRepo, ChatUserRepo, MessageRepo, UserRepo } from "./db-service";
-import { ClearChatResultCode, CreateChatResultCode, GetUserChatsResultCode, MessagePullResultCode, MessagePushResultCode } from "../declarations/enums";
+import { ClearChatResultCode, CreateChatResultCode, GetUserChatsResultCode, MessagePullResultCode, MessagePushResultCode, RemoveChatResultCode } from "../declarations/enums";
 
 
 export module MessagingService {
@@ -112,6 +112,31 @@ export module MessagingService {
     
     return new ClearChatResult(true, ClearChatResultCode.Success, res.affected || 0);
   }
+
+  export async function RemoveChat(token?: string, chatid?: number): Promise<RemoveChatResult> {
+    if (token == undefined || chatid == undefined) return new RemoveChatResult(false, RemoveChatResultCode.NullParameter) 
+    
+    const UserID = await TokenManager.AuthToken(token);
+    if (UserID == undefined) return new RemoveChatResult(false, RemoveChatResultCode.NoAuth);
+  
+    const Chat = await GetChat(chatid);
+    if (Chat == null) return new RemoveChatResult(false, RemoveChatResultCode.ChatNotExist);
+    if (!(await Chat.IsUserAvailable(UserID))) return new RemoveChatResult(false, RemoveChatResultCode.ChatNoAccess);
+
+    await MessageRepo.delete({
+      chatid: chatid
+    });
+
+    await ChatUserRepo.delete({
+      chatid: chatid
+    });
+
+    await ChatRepo.delete({
+      chatid: chatid
+    });
+    
+    return new RemoveChatResult(true, RemoveChatResultCode.Success);
+  }
 }
 
 export class MessagePushResult {
@@ -167,5 +192,14 @@ export class ClearChatResult {
     this.ok = ok;
     this.code = code;
     this.affected = affected;
+  }
+}
+export class RemoveChatResult {
+  public ok: boolean;
+  public code: number;
+
+  constructor (ok: boolean, code: number) {
+    this.ok = ok;
+    this.code = code;
   }
 }

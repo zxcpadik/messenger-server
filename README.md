@@ -124,13 +124,29 @@ Clear all message in chat
             chatid: int
           }
     Header: token, session
-    Return: JSON { ok: boolean, status: int, chat?: Chat }
+    Return: JSON { ok: boolean, status: int, affected: int }
     Status: 250 - Success
             251 - NullParameter
             252 - NoAuth
             253 - ChatNotExist
             254 - ChatNoAccess
             259 - InternalError
+```
+#### Client:Chat:Clear
+Clear all message in chat
+```
+[POST] /api/v0/client/chat/clear
+    Args: JSON {
+            chatid: int
+          }
+    Header: token, session
+    Return: JSON { ok: boolean, status: int }
+    Status: 260 - Success
+            261 - NullParameter
+            262 - NoAuth
+            263 - ChatNotExist
+            264 - ChatNoAccess
+            269 - InternalError
 ```
 
 ## Objects
