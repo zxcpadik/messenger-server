@@ -38,11 +38,11 @@ User registration
 [POST] /api/v0/user/register
     Args: JSON { username: string, password: string }
     Return: JSON { ok: boolean, status: int, token?: string }
-    Status: 111 - Success
-            112 - NullParameter
-            113 - UsernameFormat
-            114 - PasswordFormat
-            115 - UserAlreadyExists
+    Status: 110 - Success
+            111 - NullParameter
+            112 - UsernameFormat
+            113 - PasswordFormat
+            114 - UserAlreadyExists
             119 - InternalError
 ```
 ### Messages
