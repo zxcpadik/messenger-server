@@ -12,13 +12,13 @@ export class Message {
     @Column()
     public chatid: number = 0;
 
-    @Column({ type: 'integer', default: () => "0"})
+    @Column({ type: 'integer', default: 0})
     public flag: MessageFlag = 0;
 
     @Column({type: "text" })
     public text: string = "";
 
-    @Column({ type: "timestamp" })
+    @Column({ type: "timestamp", default: () => "CURRENT_TIMESTAMP"})
     public sentdate: Date = new Date();
 
     @Column()
