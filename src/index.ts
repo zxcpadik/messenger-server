@@ -52,7 +52,7 @@ app.post('/api/v0/user/auth', async (req: Request, res: Response) => {
   const username = (req.body["username"] as string | undefined)?.trim();
   const password = (req.body["password"] as string | undefined)?.trim();
 
-  const apires = await AuthService.AuthUser(new AuthCredentials(username, password));
+  const apires = await AuthService.AuthUser(new AuthCredentials(username?.toLowerCase(), password));
   if (process.env.DEBUG_MODE == "true") console.log(apires);
   res.json(apires);
 });

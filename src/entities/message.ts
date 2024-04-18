@@ -29,8 +29,4 @@ export class Message {
 
     @Column()
     public replyid: number = -1;
-
-    public async Load() {
-      this.sender = (await UserRepo.findOneBy({ UserID: this.senderid }))?.nickname || "DELETED";
-    }
 }

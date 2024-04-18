@@ -52,7 +52,11 @@ export module MessagingService {
     }
 
     const msgs = await MessageRepo.find({where: { chatid: chatID, localmessageid: And(MoreThanOrEqual(offset), LessThanOrEqual(offset + count))}, take: count});
-    msgs.forEach((x) => x.messageid = 0);
+    for (let x of msgs) {
+      x.sender = (await UserRepo.findOneBy({ UserID: x.senderid }))?.nickname || "DELETED";
+      x.messageid = 0;
+      x.senderid = 0;
+    }
     return new MessagePullResult(true, MessagePullResultCode.Success, msgs);
   }
   export async function RemoveMesasge(token?: string, chatid?: number, messageid?: number): Promise<RemoveMessageResult> {
