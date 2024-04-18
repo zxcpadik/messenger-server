@@ -1,18 +1,21 @@
 import { Entity, PrimaryColumn, Column } from "typeorm";
+import { SessionRepo } from "../services/db-service";
 
 @Entity()
 export class Session {
   @PrimaryColumn({ length: 64 })
   public Hash: string = "";
 
-  @Column({ type: "timestamptz" })
+  @Column({ type: "timestamptz", default: 'epoch' })
   public DecayDate: Date = new Date(0);
 
   @Column()
   public IPAddress: string = "";
 
   public IsDecayed() {
-    return this.DecayDate.getTime() < Date.now();
+    var decay = this.DecayDate.getTime() < Date.now();
+    if (decay) SessionRepo.remove(this);
+    return decay;
   }
 
   public Renew() {

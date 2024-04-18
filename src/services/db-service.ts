@@ -15,7 +15,8 @@ export const AppDataSource = new DataSource({
     database: "messenger",
     entities: [Session, ChatUser, Token, User, Message, Chat],
     synchronize: true,
-    logging: false
+    logging: false,
+    cache: true
 });
 
 AppDataSource.initialize()

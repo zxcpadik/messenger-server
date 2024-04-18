@@ -1,6 +1,6 @@
 import { Entity, PrimaryColumn, Column, PrimaryGeneratedColumn } from "typeorm";
 import { MessagingService } from "../services/messaging-service";
-import { ChatUserRepo, MessageRepo } from "../services/db-service";
+import { ChatUserRepo, MessageRepo, UserRepo } from "../services/db-service";
 
 @Entity()
 export class Chat {
@@ -10,8 +10,11 @@ export class Chat {
     @Column({type: "text" })
     public title: string = "";
 
-    @Column({ type: "timestamp", default: () => "CURRENT_TIMESTAMP" })
-    public creationdate: Date = new Date(new Date().getTime() - (new Date().getTimezoneOffset() * 60000));
+    @Column({type: "text", nullable: true })
+    public description: string | undefined;
+
+    @Column({ type: "timestamptz", default: () => "CURRENT_TIMESTAMP" })
+    public creationdate: Date = new Date();
 
     @Column()
     public creatorid: number = 0;
@@ -22,10 +25,11 @@ export class Chat {
     @Column()
     public isgroup: boolean = false;
 
-    public users: number[] = [];
+    public users: string[] = [];
 
     public async GetUsers() {
-      this.users = (await ChatUserRepo.findBy({ chatid: this.chatid })).map<number>((x) => x.userid);
+      let usersids = (await ChatUserRepo.findBy({ chatid: this.chatid })).map<number>((x) => x.userid);
+      for (let id of usersids) this.users.push((await UserRepo.findOneBy({ UserID: id }))?.nickname || "");
     }
 
     public async IsUserAvailable(UserID: number) {
