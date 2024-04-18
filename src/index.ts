@@ -344,7 +344,6 @@ app.listen({ port: 8080, host: "0.0.0.0"}, () => {
   console.log(`[SERVER]: Server is running!`);
 });
 
-
 import * as child_process from "child_process";
 
 let networkSpeeds = {
@@ -360,6 +359,7 @@ let networkSpeeds = {
 };
 
 setInterval(() => {
+  return;
   child_process.exec(`powershell "Get-NetAdapterStatistics -Name 'Ethernet'"`, (error, stdout, stderr) => {
     if (error) {
       console.log(error);

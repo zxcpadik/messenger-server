@@ -4,6 +4,18 @@ import { SessionRepo } from "./db-service";
 
 
 export module SessionManager {
+  
+  setInterval(async () => {
+    try {
+      var sr = await SessionRepo.find();
+      for (let si = 0; si < sr.length; si++) {
+        if (sr[si].IsDecayed()) SessionRepo.remove(sr[si]);
+      }
+    } catch (err) {
+      console.log(`[ERROR] SessionManager::Remover`);
+    }
+  }, 180000);
+
   export async function OpenNewSession(ip: string) {
     try {
       var s = new Session();
@@ -30,7 +42,6 @@ export module SessionManager {
       return new Session();
     }
   }
-
   export async function GetSession(hash: string, ip: string) {
       return (await SessionRepo.findOneBy({ Hash: hash, IPAddress: ip})) || new Session();
   }

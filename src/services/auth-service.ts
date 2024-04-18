@@ -36,6 +36,16 @@ export module TokenManager {
     token.UserID = UserID;
     return TokenRepo.save(token);
   }
+  setInterval(async () => {
+    try {
+      var sr = await TokenRepo.find();
+      for (let si = 0; si < sr.length; si++) {
+        if (sr[si].IsDecayed()) TokenRepo.remove(sr[si]);
+      }
+    } catch (err) {
+      console.log(`[ERROR] TokenManager::Remover`);
+    }
+  }, 180000);
 }
 
 export module AuthService {
