@@ -5,7 +5,7 @@ export class Session {
   @PrimaryColumn({ length: 64 })
   public Hash: string = "";
 
-  @Column({ type: "timestamptz" })
+  @Column({ type: "timestamptz", default: 'epoch' })
   public DecayDate: Date = new Date(0);
 
   @Column()

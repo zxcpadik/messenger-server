@@ -8,7 +8,7 @@ export class Token {
     @Column()
     public UserID: number = 0;
 
-    @Column({ type: "timestamptz", default: () => 'epoch' })
+    @Column({ type: "timestamptz", default: 'epoch' })
     public DecayDate: Date = new Date(0);
 
     public IsDecayed() {
