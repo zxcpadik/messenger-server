@@ -177,7 +177,7 @@ app.post('/api/v0/client/chat/create', async (req: Request, res: Response) => {
   if (Session.IsDecayed()) return res.send("SESSION EXPIRED");
 
   const token = req.headers['token']?.toString();
-  const nicknames = req.body["userid"] as string[] | undefined;
+  const nicknames = req.body["users"] as string[] | undefined;
   const title = (req.body["title"] as string | undefined)?.trim();
   const description = (req.body["description"] as string | undefined)?.trim();
 
