@@ -107,8 +107,8 @@ export module MessagingService {
 
     return new GetUserChatsResult(true, GetUserChatsResultCode.Success, chats);
   }
-  export async function CreateChat(token?: string, userIDs?: number[], title?: string, description?: string): Promise<CreateChatResult> {
-    if (token == undefined || userIDs == undefined || title == undefined) return new CreateChatResult(false, CreateChatResultCode.NullParameter);
+  export async function CreateChat(token?: string, nicknames?: string[], title?: string, description?: string): Promise<CreateChatResult> {
+    if (token == undefined || nicknames == undefined || title == undefined) return new CreateChatResult(false, CreateChatResultCode.NullParameter);
 
     var UserID = await TokenManager.AuthToken(token);
     if (UserID == undefined) return new CreateChatResult(false, CreateChatResultCode.NoAuth);
@@ -123,7 +123,12 @@ export module MessagingService {
     chat.description = description;
     chat = await ChatRepo.save(chat);
 
-    userIDs = [...new Set(userIDs)];
+    let ids: number[] = [];
+    for (let nick of nicknames) {
+      ids.push((await UserRepo.findOneBy({ nickname: nick }))?.UserID || -1);
+    }
+    
+    let userIDs = [...new Set(ids)];
     if (!userIDs.includes(UserID)) userIDs.push(UserID);
     for (let uid of userIDs) {
       if (!(await UserRepo.existsBy({ UserID: uid }))) continue;

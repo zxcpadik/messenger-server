@@ -147,7 +147,7 @@ Create new chat
 ```
 [POST] /api/v0/client/chat/create
     Args: JSON {
-            userid: int[] - ID of users
+            users: string[] - ID of users
             title: string
             description?: string
           }
