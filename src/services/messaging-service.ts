@@ -122,10 +122,12 @@ export module MessagingService {
     chat.isgroup = true;
     chat.description = description;
     chat = await ChatRepo.save(chat);
-    
-    ChatUserRepo.save({ chatid: chat.chatid, userid: UserID, joindate: new Date() });
+
+    userIDs = [...new Set(userIDs)];
+    if (!userIDs.includes(UserID)) userIDs.push(UserID);
     for (let uid of userIDs) {
       if (!(await UserRepo.existsBy({ UserID: uid }))) continue;
+      if (await ChatUserRepo.existsBy({ userid: uid, chatid: chat.chatid })) continue;
       await ChatUserRepo.save({ chatid: chat.chatid, userid: uid });
     }
 
