@@ -1,4 +1,5 @@
 import { Entity, PrimaryColumn, Column, PrimaryGeneratedColumn } from "typeorm";
+import { MessageFlag } from "../declarations/enums";
 
 @Entity()
 export class Message {
@@ -10,6 +11,9 @@ export class Message {
 
     @Column()
     public chatid: number = 0;
+
+    @Column({ type: 'integer'})
+    public flag: MessageFlag = 0;
 
     @Column({type: "text" })
     public text: string = "";

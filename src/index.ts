@@ -301,7 +301,7 @@ app.get(['/api', '/api/*'], async (req: Request, res: Response) => {
 });
 
 app.get('/', (req: Request, res: Response) => {
-  if (process.env.DEBUG_MODE == "true") console.log(`[GET] NOAPI-ZERO: ${req.url}`);
+  if (process.env.DEBUG_MODE == "true") console.log(`[GET] URL-ZERO: ${req.url}`);
   res.send(`Server running.\n${new Date().toString()}`);
 })
 

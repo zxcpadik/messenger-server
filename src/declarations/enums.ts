@@ -130,3 +130,9 @@ export enum RemoveUserResultCode {
   NoPermission        = 377,
   InternalError       = 379
 }
+
+
+export enum MessageFlag {
+    None = 0,
+    Edited = 1,
+}

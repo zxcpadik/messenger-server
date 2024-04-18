@@ -4,7 +4,7 @@ import { ChatUser } from "../entities/chat-user";
 import { Message } from "../entities/message";
 import { TokenManager } from "./auth-service";
 import { ChatRepo, ChatUserRepo, MessageRepo, UserRepo } from "./db-service";
-import { AddUserResultCode, ChatInfoResultCode, ClearChatResultCode, CreateChatResultCode, EditMessageResultCode, GetUserChatsResultCode, MessagePullResultCode, MessagePushResultCode, RemoveChatResultCode, RemoveMessageResultCode, RemoveUserResultCode, SetChatInfoResultCode } from "../declarations/enums";
+import { AddUserResultCode, ChatInfoResultCode, ClearChatResultCode, CreateChatResultCode, EditMessageResultCode, GetUserChatsResultCode, MessageFlag, MessagePullResultCode, MessagePushResultCode, RemoveChatResultCode, RemoveMessageResultCode, RemoveUserResultCode, SetChatInfoResultCode } from "../declarations/enums";
 
 
 export module MessagingService {
@@ -84,7 +84,7 @@ export module MessagingService {
     if (!(await MessageRepo.existsBy({ chatid: chatid, localmessageid: messageid }))) return new EditMessageResult(false, EditMessageResultCode.MessageNotFound);
     if (text.length > 512 || text.length == 0) return new MessagePushResult(false, MessagePushResultCode.TextLenght);
 
-    MessageRepo.update({ chatid: chatid, localmessageid: messageid }, { text: text });
+    MessageRepo.update({ chatid: chatid, localmessageid: messageid }, { text: text, flag: MessageFlag.Edited });
 
     return new EditMessageResult(true, EditMessageResultCode.Success);
   } 

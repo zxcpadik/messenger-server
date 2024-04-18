@@ -299,6 +299,7 @@ Chat {
   isgroup: boolean
 }
 ```
+
 #### ChatInfo
 ```
 ChatInfoObj {
@@ -310,6 +311,13 @@ ChatInfoObj {
   creationdate?: Date
 }
 
+```
+#### ChatFlags
+```
+enum MessageFlag {
+    None = 0
+    Edited = 1
+}
 ```
 
 ## Variables
