@@ -12,7 +12,7 @@ export class Message {
     @Column()
     public chatid: number = 0;
 
-    @Column({ type: 'integer'})
+    @Column({ type: 'integer', default: () => "0"})
     public flag: MessageFlag = 0;
 
     @Column({type: "text" })
