@@ -24,6 +24,14 @@ export enum UserInfoResultCode {
   NoAuth              = 122,
   InternalError       = 129
 }
+export enum SetUserInfoResultCode {
+  Success             = 130,
+  NullParameter       = 131,
+  NoAuth              = 132,
+  NicknameFormat      = 133,
+  NicknameBusy        = 134,
+  InternalError       = 139
+}
 
 export enum MessagePushResultCode {
   Success             = 200,

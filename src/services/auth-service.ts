@@ -2,7 +2,7 @@ import { generate } from "randomstring";
 import { Token } from "../entities/token";
 import { User } from "../entities/user";
 import { TokenRepo, UserRepo } from "./db-service";
-import { AuthResultCode, RegisterResultCode, UserInfoResultCode } from "../declarations/enums";
+import { AuthResultCode, RegisterResultCode, SetUserInfoResultCode, UserInfoResultCode } from "../declarations/enums";
 
 const UsernameCharset = "ABCDEFGHIJKLMNOPQRSTUVWXYZЯЮЭЬЫЪЩШЧЦХФУТСРПОНМЛКЙИЗЖЁЕДГВБАabcdefghijklmnopqrstuvwxyzабвгдеёжзийклмнопрстуфхцчшщъыьэюя1234567890_";
 const PasswordCharset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZЯЮЭЬЫЪЩШЧЦХФУТСРПОНМЛКЙИЗЖЁЕДГВБАabcdefghijklmnopqrstuvwxyzабвгдеёжзийклмнопрстуфхцчшщъыьэюя1234567890_!\"@ $%&/()=?\'`*+~#-_.,;:{[]}\<(><<)><(>><)>|';
@@ -88,6 +88,18 @@ export module AuthService {
 
     return new UserInfoResult(true, UserInfoResultCode.Success, userinfo);
   }
+  export async function SetInfo(token?: string, nickname?: string): Promise<SetUserInfoResult> {
+    if (token == undefined || nickname == undefined) return new SetUserInfoResult(false, SetUserInfoResultCode.NullParameter);
+
+    const UserID = await TokenManager.AuthToken(token);
+    if (UserID == undefined) return new SetUserInfoResult(false, SetUserInfoResultCode.NoAuth);
+
+    if (!TestUsernameLegal(nickname)) return new SetUserInfoResult(false, SetUserInfoResultCode.NicknameFormat);
+    if (await UserRepo.existsBy({ nickname: nickname })) return new SetUserInfoResult(false, SetUserInfoResultCode.NicknameBusy);
+
+    await UserRepo.update({ UserID: UserID }, { nickname: nickname });
+    return new SetUserInfoResult(true, SetUserInfoResultCode.Success);
+  }
 }
 
 export class AuthCredentials {
@@ -131,6 +143,15 @@ export class UserInfoResult {
     this.ok = ok;
     this.status = status;
     this.info = info;
+  }
+}
+export class SetUserInfoResult {
+  public ok: boolean;
+  public status: number;
+
+  constructor (ok: boolean, status: number) {
+    this.ok = ok;
+    this.status = status;
   }
 }
 

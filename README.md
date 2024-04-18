@@ -59,6 +59,22 @@ User registration
             122 -  NoAuth
             129 -  InternalError
 ```
+#### User:SetInfo
+User registration
+```
+[POST] /api/v0/user/setinfo
+    Args: JSON {
+      nickname: string
+    }
+    Header: token, session
+    Return: JSON { ok: boolean, status: int, info?: Userinfo }
+    Status: 130 - Success
+            131 - NullParameter
+            132 - NoAuth
+            133 - NicknameFormat
+            134 - NicknameBusy
+            139 - InternalError
+```
 ### Messages
 #### Client:Message:Push
 Push messages into chat
