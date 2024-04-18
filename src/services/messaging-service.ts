@@ -4,7 +4,7 @@ import { ChatUser } from "../entities/chat-user";
 import { Message } from "../entities/message";
 import { TokenManager } from "./auth-service";
 import { ChatRepo, ChatUserRepo, MessageRepo, UserRepo } from "./db-service";
-import { AddUserResultCode, ChatInfoResultCode, ClearChatResultCode, CreateChatResultCode, GetUserChatsResultCode, MessagePullResultCode, MessagePushResultCode, RemoveChatResultCode, RemoveMessageResultCode, RemoveUserResultCode, SetChatInfoResultCode } from "../declarations/enums";
+import { AddUserResultCode, ChatInfoResultCode, ClearChatResultCode, CreateChatResultCode, EditMessageResultCode, GetUserChatsResultCode, MessagePullResultCode, MessagePushResultCode, RemoveChatResultCode, RemoveMessageResultCode, RemoveUserResultCode, SetChatInfoResultCode } from "../declarations/enums";
 
 
 export module MessagingService {
@@ -20,11 +20,11 @@ export module MessagingService {
 
     const UserID = await TokenManager.AuthToken(token);
     if (UserID == undefined) return new MessagePushResult(false, MessagePushResultCode.NoAuth);
-    if (text.length > 512 || text.length == 0) return new MessagePushResult(false, MessagePushResultCode.TextLenght);
 
     const Chat = await GetChat(chatID);
     if (Chat == null) return new MessagePushResult(false, MessagePushResultCode.ChatNotExist);
     if (!(await Chat.IsUserAvailable(UserID))) return new MessagePushResult(false, MessagePushResultCode.ChatNoAccess);
+    if (text.length > 512 || text.length == 0) return new MessagePushResult(false, MessagePushResultCode.TextLenght);
 
     const msgid = await Chat.GetMessagesCount();
     const msg = new Message();
@@ -70,6 +70,23 @@ export module MessagingService {
     MessageRepo.delete({ chatid: chatid, localmessageid: messageid });
 
     return new RemoveMessageResult(true, RemoveMessageResultCode.Success);
+  }
+  export async function EditMesasge(token?: string, chatid?: number, messageid?: number, text?: string): Promise<EditMessageResult> {
+    if (token == undefined || chatid == undefined || messageid == undefined || text == undefined) return new EditMessageResult(false, EditMessageResultCode.NullParameter) 
+    
+    const UserID = await TokenManager.AuthToken(token);
+    if (UserID == undefined) return new EditMessageResult(false, EditMessageResultCode.NoAuth);
+  
+    const Chat = await GetChat(chatid);
+    if (Chat == null) return new EditMessageResult(false, EditMessageResultCode.ChatNotExist);
+    if (!(await Chat.IsUserAvailable(UserID))) return new EditMessageResult(false, EditMessageResultCode.ChatNoAccess);
+
+    if (!(await MessageRepo.existsBy({ chatid: chatid, localmessageid: messageid }))) return new EditMessageResult(false, EditMessageResultCode.MessageNotFound);
+    if (text.length > 512 || text.length == 0) return new MessagePushResult(false, MessagePushResultCode.TextLenght);
+
+    MessageRepo.update({ chatid: chatid, localmessageid: messageid }, { text: text });
+
+    return new EditMessageResult(true, EditMessageResultCode.Success);
   } 
 
 
@@ -256,6 +273,15 @@ export class MessagePullResult {
   }
 }
 export class RemoveMessageResult {
+  public ok: boolean;
+  public status: number;
+
+  constructor (ok: boolean, status: number) {
+    this.ok = ok;
+    this.status = status;
+  }
+}
+export class EditMessageResult {
   public ok: boolean;
   public status: number;
 

@@ -105,6 +105,28 @@ Remove message from chat
             226 - NoPermission
             229 - InternalError
 ```
+#### Client:Message:Edit
+Edit message in chat
+```
+[POST] /api/v0/client/messages/edit
+    Args: JSON { 
+            chatid: int
+            messageid: int (localid of message in chat)
+            text: string (new text)
+          }
+    Header: token, session
+    Return: JSON { ok: boolean, status: int }
+    Status: 230 - Success
+            231 - NullParameter
+            232 - NoAuth
+            233 - ChatNotExist
+            234 - ChatNoAccess
+            235 - MessageNotFound
+            236 - NoPermission
+            237 - TextLenght
+            239 - InternalError
+```
+
 ### Chats
 #### Client:Chat:Get
 Get all chats

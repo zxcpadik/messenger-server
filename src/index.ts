@@ -129,6 +129,25 @@ app.post('/api/v0/client/messages/remove', async (req: Request, res: Response) =
   if (process.env.DEBUG_MODE == "true") console.log(apires);
   res.json(apires);
 });
+app.post('/api/v0/client/messages/edit', async (req: Request, res: Response) => {
+  const IP = req.socket.remoteAddress || "";
+  const Hash = req.headers['session']?.toString() || "";
+  const Session = await SessionManager.GetSession(Hash, IP);
+
+  if (process.env.DEBUG_MODE == "true") console.log(`MSG-EDIT: ${IP}:${Hash}:${Session.IsDecayed() ? "BAD" : "OK"}`);
+  if (process.env.DEBUG_MODE == "true") console.log(req.body);
+
+  if (Session.IsDecayed()) return res.send("SESSION EXPIRED");
+
+  const token = req.headers['token']?.toString();
+  const chatid = req.body["chatid"] as number | undefined;
+  const messageid = req.body["messageid"] as number | undefined;
+  const text = req.body["text"] as string | undefined;
+
+  const apires = await MessagingService.EditMesasge(token, chatid, messageid, text);
+  if (process.env.DEBUG_MODE == "true") console.log(apires);
+  res.json(apires);
+});
 
 app.post('/api/v0/client/chat/create', async (req: Request, res: Response) => {
   const IP = req.socket.remoteAddress || "";
@@ -273,15 +292,16 @@ app.post('/api/v0/client/chat/removeuser', async (req: Request, res: Response) =
 });
 
 app.post(['/api', '/api/*'], async (req: Request, res: Response) => {
-  console.log(`NOAPI: ${req.url}`);
+  if (process.env.DEBUG_MODE == "true") console.log(`[POST] NOAPI: ${req.url}`);
   res.json({ ok: false, status: 0 });
 });
 app.get(['/api', '/api/*'], async (req: Request, res: Response) => {
-  console.log(`NOAPI: ${req.url}`);
+  if (process.env.DEBUG_MODE == "true") console.log(`[GET] NOAPI: ${req.url}`);
   res.json({ ok: false, status: 0 });
 });
 
 app.get('/', (req: Request, res: Response) => {
+  if (process.env.DEBUG_MODE == "true") console.log(`[GET] NOAPI-ZERO: ${req.url}`);
   res.send(`Server running.\n${new Date().toString()}`);
 })
 
