@@ -17,6 +17,12 @@ export enum RegisterResultCode {
   NicknameFormat      = 115,
   InternalError       = 119
 }
+export enum UserInfoResultCode {
+  Success             = 120,
+  NullParameter       = 121,
+  NoAuth              = 122,
+  InternalError       = 129
+}
 
 export enum MessagePushResultCode {
   Success             = 200,

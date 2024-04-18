@@ -45,6 +45,18 @@ User registration
             114 - UserAlreadyExists
             119 - InternalError
 ```
+#### User:Info
+User registration
+```
+[POST] /api/v0/user/info
+    Args: JSON {}
+    Header: token, session
+    Return: JSON { ok: boolean, status: int, info?: Userinfo }
+    Status: 120 -  Success
+            121 -  NullParameter
+            122 -  NoAuth
+            129 -  InternalError
+```
 ### Messages
 #### Client:Message:Push
 Push messages into chat
@@ -297,6 +309,13 @@ Chat {
   users: string[]
   isuser: boolean /*RESERVED IN DEV*/
   isgroup: boolean
+}
+```
+#### Userinfo
+```
+Chat {
+  nickname: string
+  creationdate: date (UNIX)
 }
 ```
 

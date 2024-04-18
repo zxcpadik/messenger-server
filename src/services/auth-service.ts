@@ -2,7 +2,7 @@ import { generate } from "randomstring";
 import { Token } from "../entities/token";
 import { User } from "../entities/user";
 import { TokenRepo, UserRepo } from "./db-service";
-import { AuthResultCode, RegisterResultCode } from "../declarations/enums";
+import { AuthResultCode, RegisterResultCode, UserInfoResultCode } from "../declarations/enums";
 
 const UsernameCharset = "ABCDEFGHIJKLMNOPQRSTUVWXYZЯЮЭЬЫЪЩШЧЦХФУТСРПОНМЛКЙИЗЖЁЕДГВБАabcdefghijklmnopqrstuvwxyzабвгдеёжзийклмнопрстуфхцчшщъыьэюя1234567890_";
 const PasswordCharset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZЯЮЭЬЫЪЩШЧЦХФУТСРПОНМЛКЙИЗЖЁЕДГВБАabcdefghijklmnopqrstuvwxyzабвгдеёжзийклмнопрстуфхцчшщъыьэюя1234567890_!\"@ $%&/()=?\'`*+~#-_.,;:{[]}\<(><<)><(>><)>|';
@@ -54,7 +54,6 @@ export module AuthService {
     const Token = await TokenManager.GenerateToken(usr.UserID);
     return new AuthResult(true, AuthResultCode.Success, Token.hash);
   }
-
   export async function RegisterUser(credentials: AuthCredentials, IP: string, nickname: string = generate(8)): Promise<RegistrationResult> {
     if (credentials.username == undefined || credentials.password == undefined) return new RegistrationResult(false, RegisterResultCode.NullParameter);
 
@@ -74,6 +73,20 @@ export module AuthService {
 
     const Token = await TokenManager.GenerateToken(res.UserID);
     return new RegistrationResult(true, RegisterResultCode.Success, Token.hash);
+  }
+  export async function GetInfo(token?: string) {
+    if (token == undefined) return new UserInfoResult(false, UserInfoResultCode.NullParameter);
+
+    const UserID = await TokenManager.AuthToken(token);
+    if (UserID == undefined) return new UserInfoResult(false, UserInfoResultCode.NoAuth);
+
+    let usr = await UserRepo.findOneBy({ UserID: UserID });
+
+    let userinfo = new UserInfoObj();
+    userinfo.creationdate = usr?.CreationDate;
+    userinfo.nickname = usr?.nickname;
+
+    return new UserInfoResult(true, UserInfoResultCode.Success, userinfo);
   }
 }
 
@@ -98,7 +111,6 @@ export class AuthResult {
     this.token = token;
   }
 }
-
 export class RegistrationResult {
   public ok: boolean;
   public status: number;
@@ -109,4 +121,20 @@ export class RegistrationResult {
     this.status = status;
     this.token = token;
   }
+}
+export class UserInfoResult {
+  public ok: boolean;
+  public status: number;
+  public info?: UserInfoObj;
+
+  constructor (ok: boolean, status: number, info?: UserInfoObj) {
+    this.ok = ok;
+    this.status = status;
+    this.info = info;
+  }
+}
+
+export class UserInfoObj {
+  public nickname?: string;
+  public creationdate?: Date;
 }
