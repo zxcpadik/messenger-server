@@ -5,6 +5,7 @@ import { Message } from "../entities/message";
 import { TokenManager } from "./auth-service";
 import { ChatRepo, ChatUserRepo, MessageRepo, UserRepo } from "./db-service";
 import { AddUserResultCode, ChatInfoResultCode, ClearChatResultCode, CreateChatResultCode, EditMessageResultCode, GetUserChatsResultCode, MessageFlag, MessagePullResultCode, MessagePushResultCode, RemoveChatResultCode, RemoveMessageResultCode, RemoveUserResultCode, SetChatInfoResultCode } from "../declarations/enums";
+import clamp from "clamp";
 
 
 export module MessagingService {
@@ -37,7 +38,8 @@ export module MessagingService {
     return new MessagePushResult(true, MessagePushResultCode.Success);
   }
   export async function PullMessage(token?: string, chatID?: number, offset?: number, count: number = 1): Promise<MessagePullResult> {
-    if (token == undefined || chatID == undefined) return new MessagePullResult(false, MessagePullResultCode.NullParameter) 
+    if (token == undefined || chatID == undefined) return new MessagePullResult(false, MessagePullResultCode.NullParameter);
+    count = clamp(count, 0, 100);
     
     const UserID = await TokenManager.AuthToken(token);
     if (UserID == undefined) return new MessagePullResult(false, MessagePullResultCode.NoAuth);

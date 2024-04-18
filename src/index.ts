@@ -7,6 +7,7 @@ import os from "os";
 import { SessionManager } from "./services/session-manager";
 import { AuthCredentials, AuthService } from "./services/auth-service";
 import { MessagingService } from "./services/messaging-service";
+import { terminal } from "terminal-kit";
 
 dotenv.config();
 
@@ -342,3 +343,53 @@ app.get('/', (req: Request, res: Response) => {
 app.listen({ port: 8080, host: "0.0.0.0"}, () => {
   console.log(`[SERVER]: Server is running!`);
 });
+
+
+import * as child_process from "child_process";
+
+let networkSpeeds = {
+    download: {
+        "kb/s": 0,
+    },
+    upload: {
+        "kb/s": 0,
+    },
+    lastUpdate: Date.now(),
+    lastBytesReceived: 0,
+    lastBytesSent: 0,
+};
+
+setInterval(() => {
+  child_process.exec(`powershell "Get-NetAdapterStatistics -Name 'Ethernet'"`, (error, stdout, stderr) => {
+    if (error) {
+      console.log(error);
+    } else {
+      let response = stdout.trim().replace(/( ){2,}/g, " ");
+
+      let bytesReceived = Number(response.split("\n")[2].split(" ")[response.split("\n")[2].split(" ").length - 4]);
+      let bytesSent = Number(response.split("\n")[2].split(" ")[response.split("\n")[2].split(" ").length - 2]);
+
+      let timePassed = Date.now() - networkSpeeds.lastUpdate;
+
+      // Compare the current BytesReceived and BytesSent to the last time the function was called
+      let bytesReceivedSinceLastUpdate = bytesReceived - networkSpeeds.lastBytesReceived;
+      let bytesSentSinceLastUpdate = bytesSent - networkSpeeds.lastBytesSent;
+
+      // Check, what the timeDifference is and calculate the speed
+      let downloadSpeed = bytesReceivedSinceLastUpdate / (timePassed / 1000);
+      let uploadSpeed = bytesSentSinceLastUpdate / (timePassed / 1000);
+
+      networkSpeeds.download["kb/s"] = downloadSpeed / 1000;
+      networkSpeeds.upload["kb/s"] = uploadSpeed / 1000;
+
+      networkSpeeds.lastBytesReceived = bytesReceived;
+      networkSpeeds.lastBytesSent = bytesSent;
+      networkSpeeds.lastUpdate = Date.now();
+    }
+  });
+  terminal.getCursorLocation((err, x, y) => {
+    terminal.moveTo(x, (y || 1) - 1);
+    terminal.eraseLine();
+    console.log(`[Network]: In: ${networkSpeeds.download["kb/s"].toFixed(2)}kb/s Out: ${networkSpeeds.upload["kb/s"].toFixed(2)}kb/s`);
+  });
+}, 2000);
