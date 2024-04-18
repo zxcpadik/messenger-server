@@ -44,6 +44,7 @@ User registration
             113 - PasswordFormat
             114 - UserAlreadyExists
             115 - NicknameFormat
+            116 - NicknameBusy
             119 - InternalError
 ```
 #### User:Info

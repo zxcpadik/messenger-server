@@ -61,8 +61,8 @@ export module AuthService {
      if (!TestPasswordLegal(credentials.password)) return new RegistrationResult(false, RegisterResultCode.PasswordFormat);
      if (!TestUsernameLegal(nickname)) return new RegistrationResult(false, RegisterResultCode.NicknameFormat);
 
-    const exist = await UserRepo.existsBy({ Username: credentials.username });
-    if (exist) return new RegistrationResult(false, RegisterResultCode.UserAlreadyExists);
+    if (await UserRepo.existsBy({ Username: credentials.username })) return new RegistrationResult(false, RegisterResultCode.UserAlreadyExists);
+    if (nickname != undefined && await UserRepo.existsBy({ nickname: nickname })) return new RegistrationResult(false, RegisterResultCode.NicknameBusy);
 
     const usr = new User();
     usr.IPAddress = IP;
