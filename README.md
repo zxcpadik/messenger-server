@@ -313,7 +313,7 @@ Chat {
 ```
 #### Userinfo
 ```
-Chat {
+Userinfo {
   nickname: string
   creationdate: date (UNIX)
 }
