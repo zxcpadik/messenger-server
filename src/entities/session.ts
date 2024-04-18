@@ -19,6 +19,6 @@ export class Session {
   }
 
   public Renew() {
-    this.DecayDate = new Date(Date.now() + 7200000);
+    this.DecayDate = new Date(Date.now() + 90000);
   }
 }
