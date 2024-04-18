@@ -36,7 +36,7 @@ User authorization
 User registration
 ```
 [POST] /api/v0/user/register
-    Args: JSON { username: string, password: string }
+    Args: JSON { username: string, password: string, nickname?: string }
     Return: JSON { ok: boolean, status: int, token?: string }
     Status: 110 - Success
             111 - NullParameter

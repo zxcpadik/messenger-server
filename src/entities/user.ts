@@ -7,10 +7,13 @@ export class User {
   @PrimaryGeneratedColumn()
   public UserID: number = 0;
 
-  @Column({type: "text", unique: true })
+  @Column({ type: "text", unique: true })
+  public nickname: string = "";
+
+  @Column({ type: "text", unique: true })
   public Username: string = "";
 
-  @Column({type: "text" })
+  @Column({ type: "text" })
   public Password: string = "";
 
   @Column({ type: "timestamptz", default: () => "CURRENT_TIMESTAMP" })

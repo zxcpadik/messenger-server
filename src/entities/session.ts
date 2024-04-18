@@ -1,4 +1,5 @@
 import { Entity, PrimaryColumn, Column } from "typeorm";
+import { SessionRepo } from "../services/db-service";
 
 @Entity()
 export class Session {
@@ -12,7 +13,9 @@ export class Session {
   public IPAddress: string = "";
 
   public IsDecayed() {
-    return this.DecayDate.getTime() < Date.now();
+    var decay = this.DecayDate.getTime() < Date.now();
+    if (decay) SessionRepo.remove(this);
+    return decay;
   }
 
   public Renew() {

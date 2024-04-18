@@ -4,7 +4,7 @@ import { User } from "../entities/user";
 import { TokenRepo, UserRepo } from "./db-service";
 import { AuthResultCode, RegisterResultCode } from "../declarations/enums";
 
-const UsernameCharset = "abcdefghijklmnopqrstuvwxyzабвгдеёжзийклмнопрстуфхцчшщъыьэюя1234567890_";
+const UsernameCharset = "ABCDEFGHIJKLMNOPQRSTUVWXYZЯЮЭЬЫЪЩШЧЦХФУТСРПОНМЛКЙИЗЖЁЕДГВБАabcdefghijklmnopqrstuvwxyzабвгдеёжзийклмнопрстуфхцчшщъыьэюя1234567890_";
 const PasswordCharset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZЯЮЭЬЫЪЩШЧЦХФУТСРПОНМЛКЙИЗЖЁЕДГВБАabcdefghijklmnopqrstuvwxyzабвгдеёжзийклмнопрстуфхцчшщъыьэюя1234567890_!\"@ $%&/()=?\'`*+~#-_.,;:{[]}\<(><<)><(>><)>|';
 export function TestUsernameLegal(username?: string): boolean {
   if (username == undefined || username.length < 6 || username.length > 64) return false;
@@ -55,11 +55,12 @@ export module AuthService {
     return new AuthResult(true, AuthResultCode.Success, Token.hash);
   }
 
-  export async function RegisterUser(credentials: AuthCredentials, IP: string): Promise<RegistrationResult> {
+  export async function RegisterUser(credentials: AuthCredentials, IP: string, nickname: string = generate(8)): Promise<RegistrationResult> {
     if (credentials.username == undefined || credentials.password == undefined) return new RegistrationResult(false, RegisterResultCode.NullParameter);
 
      if (!TestUsernameLegal(credentials.username)) return new RegistrationResult(false, RegisterResultCode.UsernameFormat);
      if (!TestPasswordLegal(credentials.password)) return new RegistrationResult(false, RegisterResultCode.PasswordFormat);
+     if (!TestUsernameLegal(nickname)) return new RegistrationResult(false, RegisterResultCode.NicknameFormat);
 
     const exist = await UserRepo.existsBy({ Username: credentials.username });
     if (exist) return new RegistrationResult(false, RegisterResultCode.UserAlreadyExists);
@@ -68,6 +69,7 @@ export module AuthService {
     usr.IPAddress = IP;
     usr.UpdatePassword(credentials.password);
     usr.Username = credentials.username;
+    usr.nickname = nickname;
     const res = await UserRepo.save(usr);
 
     const Token = await TokenManager.GenerateToken(res.UserID);

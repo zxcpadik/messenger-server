@@ -14,6 +14,7 @@ export enum RegisterResultCode {
   UsernameFormat      = 112,
   PasswordFormat      = 113,
   UserAlreadyExists   = 114,
+  NicknameFormat      = 115,
   InternalError       = 119
 }
 

@@ -68,8 +68,9 @@ app.post('/api/v0/user/register', async (req: Request, res: Response) => {
 
   const username = (req.body["username"] as string | undefined)?.trim();
   const password = (req.body["password"] as string | undefined)?.trim();
+  const nickname = (req.body["nickname"] as string | undefined)?.trim();
 
-  const apires = await AuthService.RegisterUser(new AuthCredentials(username, password), IP);
+  const apires = await AuthService.RegisterUser(new AuthCredentials(username?.toLowerCase(), password), IP, nickname);
   if (process.env.DEBUG_MODE == "true") console.log(apires);
   res.json(apires);
 });
