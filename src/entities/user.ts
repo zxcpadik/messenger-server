@@ -13,7 +13,7 @@ export class User {
   @Column({type: "text" })
   public Password: string = "";
 
-  @Column({ type: "timestamptz" })
+  @Column({ type: "timestamptz", default: () => "CURRENT_TIMESTAMP" })
   public CreationDate: Date = new Date();
 
   @Column({ type: "text" })
