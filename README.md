@@ -352,8 +352,9 @@ ChatInfoObj {
 #### ChatFlags
 ```
 enum MessageFlag {
-    None = 0
-    Edited = 1
+  None = 0
+  Edited = 1
+  Image = 2
 }
 ```
 

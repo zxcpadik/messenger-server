@@ -40,65 +40,85 @@ export module TokenManager {
 
 export module AuthService {
   export async function AuthUser(credentials: AuthCredentials): Promise<AuthResult> {
-    if (credentials.username == undefined || credentials.password == undefined) return new AuthResult(false, AuthResultCode.NullParameter);
+    try {
+      if (credentials.username == undefined || credentials.password == undefined) return new AuthResult(false, AuthResultCode.NullParameter);
 
-    if (!TestUsernameLegal(credentials.username)) return new AuthResult(false, AuthResultCode.UsernameFormat);
-    if (!TestPasswordLegal(credentials.password)) return new AuthResult(false, AuthResultCode.PasswordFormat);
+      if (!TestUsernameLegal(credentials.username)) return new AuthResult(false, AuthResultCode.UsernameFormat);
+      if (!TestPasswordLegal(credentials.password)) return new AuthResult(false, AuthResultCode.PasswordFormat);
 
-    const usr = await UserRepo.findOneBy({ Username: credentials.username });
-    if (usr == null) return new AuthResult(false, AuthResultCode.UserNotExists);
+      const usr = await UserRepo.findOneBy({ Username: credentials.username });
+      if (usr == null) return new AuthResult(false, AuthResultCode.UserNotExists);
 
-    const passValid = usr.ComparePassword(credentials.password);
-    if (!passValid) return new AuthResult(false, AuthResultCode.PasswordIncorrect);
+      const passValid = usr.ComparePassword(credentials.password);
+      if (!passValid) return new AuthResult(false, AuthResultCode.PasswordIncorrect);
 
-    const Token = await TokenManager.GenerateToken(usr.UserID);
-    return new AuthResult(true, AuthResultCode.Success, Token.hash);
+      const Token = await TokenManager.GenerateToken(usr.UserID);
+      return new AuthResult(true, AuthResultCode.Success, Token.hash);
+    } catch (err) {
+      console.log(`[ERROR] AuthService::AuthUser\n${err}`);
+      return new AuthResult(false, AuthResultCode.InternalError);
+    }
   }
   export async function RegisterUser(credentials: AuthCredentials, IP: string, nickname: string = generate(8)): Promise<RegistrationResult> {
-    if (credentials.username == undefined || credentials.password == undefined) return new RegistrationResult(false, RegisterResultCode.NullParameter);
+    try {
+      if (credentials.username == undefined || credentials.password == undefined) return new RegistrationResult(false, RegisterResultCode.NullParameter);
 
-     if (!TestUsernameLegal(credentials.username)) return new RegistrationResult(false, RegisterResultCode.UsernameFormat);
-     if (!TestPasswordLegal(credentials.password)) return new RegistrationResult(false, RegisterResultCode.PasswordFormat);
-     if (!TestUsernameLegal(nickname)) return new RegistrationResult(false, RegisterResultCode.NicknameFormat);
+      if (!TestUsernameLegal(credentials.username)) return new RegistrationResult(false, RegisterResultCode.UsernameFormat);
+      if (!TestPasswordLegal(credentials.password)) return new RegistrationResult(false, RegisterResultCode.PasswordFormat);
+      if (!TestUsernameLegal(nickname)) return new RegistrationResult(false, RegisterResultCode.NicknameFormat);
 
-    if (await UserRepo.existsBy({ Username: credentials.username })) return new RegistrationResult(false, RegisterResultCode.UserAlreadyExists);
-    if (nickname != undefined && await UserRepo.existsBy({ nickname: nickname })) return new RegistrationResult(false, RegisterResultCode.NicknameBusy);
+      if (await UserRepo.existsBy({ Username: credentials.username })) return new RegistrationResult(false, RegisterResultCode.UserAlreadyExists);
+      if (nickname != undefined && await UserRepo.existsBy({ nickname: nickname })) return new RegistrationResult(false, RegisterResultCode.NicknameBusy);
 
-    const usr = new User();
-    usr.IPAddress = IP;
-    usr.UpdatePassword(credentials.password);
-    usr.Username = credentials.username;
-    usr.nickname = nickname;
-    const res = await UserRepo.save(usr);
+      const usr = new User();
+      usr.IPAddress = IP;
+      usr.UpdatePassword(credentials.password);
+      usr.Username = credentials.username;
+      usr.nickname = nickname;
+      const res = await UserRepo.save(usr);
 
-    const Token = await TokenManager.GenerateToken(res.UserID);
+      const Token = await TokenManager.GenerateToken(res.UserID);
     return new RegistrationResult(true, RegisterResultCode.Success, Token.hash);
+    } catch (err) {
+      console.log(`[ERROR] AuthService::RegisterUser\n${err}`);
+      return new RegistrationResult(false, RegisterResultCode.InternalError);
+    }
   }
   export async function GetInfo(token?: string) {
-    if (token == undefined) return new UserInfoResult(false, UserInfoResultCode.NullParameter);
+    try {
+      if (token == undefined) return new UserInfoResult(false, UserInfoResultCode.NullParameter);
 
-    const UserID = await TokenManager.AuthToken(token);
-    if (UserID == undefined) return new UserInfoResult(false, UserInfoResultCode.NoAuth);
-
-    let usr = await UserRepo.findOneBy({ UserID: UserID });
-
-    let userinfo = new UserInfoObj();
-    userinfo.creationdate = usr?.CreationDate;
-    userinfo.nickname = usr?.nickname;
-
-    return new UserInfoResult(true, UserInfoResultCode.Success, userinfo);
+      const UserID = await TokenManager.AuthToken(token);
+      if (UserID == undefined) return new UserInfoResult(false, UserInfoResultCode.NoAuth);
+  
+      let usr = await UserRepo.findOneBy({ UserID: UserID });
+  
+      let userinfo = new UserInfoObj();
+      userinfo.creationdate = usr?.CreationDate;
+      userinfo.nickname = usr?.nickname;
+  
+      return new UserInfoResult(true, UserInfoResultCode.Success, userinfo);
+    } catch (err) {
+      console.log(`[ERROR] AuthService::GetInfo\n${err}`);
+      return new UserInfoResult(false, UserInfoResultCode.InternalError);
+    }
   }
   export async function SetInfo(token?: string, nickname?: string): Promise<SetUserInfoResult> {
-    if (token == undefined || nickname == undefined) return new SetUserInfoResult(false, SetUserInfoResultCode.NullParameter);
+    try {
+      if (token == undefined || nickname == undefined) return new SetUserInfoResult(false, SetUserInfoResultCode.NullParameter);
 
-    const UserID = await TokenManager.AuthToken(token);
-    if (UserID == undefined) return new SetUserInfoResult(false, SetUserInfoResultCode.NoAuth);
+      const UserID = await TokenManager.AuthToken(token);
+      if (UserID == undefined) return new SetUserInfoResult(false, SetUserInfoResultCode.NoAuth);
 
-    if (!TestUsernameLegal(nickname)) return new SetUserInfoResult(false, SetUserInfoResultCode.NicknameFormat);
-    if (await UserRepo.existsBy({ nickname: nickname })) return new SetUserInfoResult(false, SetUserInfoResultCode.NicknameBusy);
+      if (!TestUsernameLegal(nickname)) return new SetUserInfoResult(false, SetUserInfoResultCode.NicknameFormat);
+      if (await UserRepo.existsBy({ nickname: nickname })) return new SetUserInfoResult(false, SetUserInfoResultCode.NicknameBusy);
 
-    await UserRepo.update({ UserID: UserID }, { nickname: nickname });
-    return new SetUserInfoResult(true, SetUserInfoResultCode.Success);
+      await UserRepo.update({ UserID: UserID }, { nickname: nickname });
+      return new SetUserInfoResult(true, SetUserInfoResultCode.Success);
+    } catch (err) {
+      console.log(`[ERROR] AuthService::SetInfo\n${err}`);
+      return new SetUserInfoResult(false, SetUserInfoResultCode.InternalError);
+    }
   }
 }
 

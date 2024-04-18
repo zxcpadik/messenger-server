@@ -151,4 +151,5 @@ export enum RemoveUserResultCode {
 export enum MessageFlag {
     None = 0,
     Edited = 1,
+    Image = 2,
 }

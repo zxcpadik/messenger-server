@@ -392,4 +392,4 @@ setInterval(() => {
     terminal.eraseLine();
     console.log(`[Network]: In: ${networkSpeeds.download["kb/s"].toFixed(2)}kb/s Out: ${networkSpeeds.upload["kb/s"].toFixed(2)}kb/s`);
   });
-}, 2000);
+}, 3000);
