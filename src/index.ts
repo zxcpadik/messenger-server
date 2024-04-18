@@ -111,6 +111,24 @@ app.post('/api/v0/client/messages/push', async (req: Request, res: Response) => 
   if (process.env.DEBUG_MODE == "true") console.log(apires);
   res.json(apires);
 });
+app.post('/api/v0/client/messages/remove', async (req: Request, res: Response) => {
+  const IP = req.socket.remoteAddress || "";
+  const Hash = req.headers['session']?.toString() || "";
+  const Session = await SessionManager.GetSession(Hash, IP);
+
+  if (process.env.DEBUG_MODE == "true") console.log(`MSG-REMOVE: ${IP}:${Hash}:${Session.IsDecayed() ? "BAD" : "OK"}`);
+  if (process.env.DEBUG_MODE == "true") console.log(req.body);
+
+  if (Session.IsDecayed()) return res.send("SESSION EXPIRED");
+
+  const token = req.headers['token']?.toString();
+  const chatid = req.body["chatid"] as number | undefined;
+  const messageid = req.body["messageid"] as number | undefined;
+
+  const apires = await MessagingService.RemoveMesasge(token, chatid, messageid);
+  if (process.env.DEBUG_MODE == "true") console.log(apires);
+  res.json(apires);
+});
 
 app.post('/api/v0/client/chat/create', async (req: Request, res: Response) => {
   const IP = req.socket.remoteAddress || "";
@@ -203,7 +221,7 @@ app.post('/api/v0/client/chat/setinfo', async (req: Request, res: Response) => {
   const Hash = req.headers['session']?.toString() || "";
   const Session = await SessionManager.GetSession(Hash, IP);
 
-  if (process.env.DEBUG_MODE == "true") console.log(`CHAT-REMOVE: ${IP}:${Hash}:${Session.IsDecayed() ? "BAD" : "OK"}`);
+  if (process.env.DEBUG_MODE == "true") console.log(`CHAT-SETINFO: ${IP}:${Hash}:${Session.IsDecayed() ? "BAD" : "OK"}`);
   if (process.env.DEBUG_MODE == "true") console.log(req.body);
 
   if (Session.IsDecayed()) return res.send("SESSION EXPIRED");
@@ -222,7 +240,7 @@ app.post('/api/v0/client/chat/adduser', async (req: Request, res: Response) => {
   const Hash = req.headers['session']?.toString() || "";
   const Session = await SessionManager.GetSession(Hash, IP);
 
-  if (process.env.DEBUG_MODE == "true") console.log(`CHAT-REMOVE: ${IP}:${Hash}:${Session.IsDecayed() ? "BAD" : "OK"}`);
+  if (process.env.DEBUG_MODE == "true") console.log(`CHAT-ADDUSER: ${IP}:${Hash}:${Session.IsDecayed() ? "BAD" : "OK"}`);
   if (process.env.DEBUG_MODE == "true") console.log(req.body);
 
   if (Session.IsDecayed()) return res.send("SESSION EXPIRED");
@@ -240,7 +258,7 @@ app.post('/api/v0/client/chat/removeuser', async (req: Request, res: Response) =
   const Hash = req.headers['session']?.toString() || "";
   const Session = await SessionManager.GetSession(Hash, IP);
 
-  if (process.env.DEBUG_MODE == "true") console.log(`CHAT-REMOVE: ${IP}:${Hash}:${Session.IsDecayed() ? "BAD" : "OK"}`);
+  if (process.env.DEBUG_MODE == "true") console.log(`CHAT-REMOVEUSER: ${IP}:${Hash}:${Session.IsDecayed() ? "BAD" : "OK"}`);
   if (process.env.DEBUG_MODE == "true") console.log(req.body);
 
   if (Session.IsDecayed()) return res.send("SESSION EXPIRED");

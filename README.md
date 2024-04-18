@@ -51,7 +51,7 @@ Push messages into chat
 ```
 [POST] /api/v0/client/messages/push
     Args: JSON {
-            chatid: bigint (ulong),
+            chatid: int,
             text: string (max: 512 chars)
             options?: {/* RESERVED IN DEV*/}
           }
@@ -71,7 +71,7 @@ Pull messages from chat
 ```
 [POST] /api/v0/client/messages/pull
     Args: JSON { 
-            chatid: bigint (ulong),
+            chatid: int,
             options?: {
               offset: int (default: last)
               count: int (default: 1, maximum: 100)
@@ -85,6 +85,25 @@ Pull messages from chat
             213 - ChatNotExist
             214 - ChatNoAccess
             219 - InternalError
+```
+#### Client:Message:Remove
+Remove message from chat
+```
+[POST] /api/v0/client/messages/remove
+    Args: JSON { 
+            chatid: int
+            messageid: int (localid of message in chat)
+          }
+    Header: token, session
+    Return: JSON { ok: boolean, status: int }
+    Status: 220 - Success
+            221 - NullParameter
+            222 - NoAuth
+            223 - ChatNotExist
+            224 - ChatNoAccess
+            225 - MessageNotFound
+            226 - NoPermission
+            229 - InternalError
 ```
 ### Chats
 #### Client:Chat:Get
@@ -235,7 +254,7 @@ Remove user from chat
 #### Message
 ```
 Message {
-  messageid: int - Global ID of message
+  messageid: int - Global ID of message (always 0)
   localmessageid: int - Local ID of message
   chatid: int - ID of chat
   text: string

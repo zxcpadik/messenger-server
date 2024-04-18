@@ -35,6 +35,16 @@ export enum MessagePullResultCode {
   ChatNoAccess        = 214,
   InternalError       = 219
 }
+export enum RemoveMessageResultCode {
+  Success             = 220,
+  NullParameter       = 221,
+  NoAuth              = 222,
+  ChatNotExist        = 223,
+  ChatNoAccess        = 224,
+  MessageNotFound     = 225,
+  NoPermission        = 226,
+  InternalError       = 229
+}
 
 export enum GetUserChatsResultCode {
   Success             = 300,

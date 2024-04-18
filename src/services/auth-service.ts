@@ -87,12 +87,12 @@ export class AuthCredentials {
 
 export class AuthResult {
   public ok: boolean;
-  public code: number;
+  public status: number;
   public token?: string;
 
-  constructor (ok: boolean, code: number, token?: string) {
+  constructor (ok: boolean, status: number, token?: string) {
     this.ok = ok;
-    this.code = code;
+    this.status = status;
     this.token = token;
   }
 }

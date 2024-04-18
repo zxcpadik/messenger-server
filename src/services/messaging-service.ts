@@ -4,7 +4,7 @@ import { ChatUser } from "../entities/chat-user";
 import { Message } from "../entities/message";
 import { TokenManager } from "./auth-service";
 import { ChatRepo, ChatUserRepo, MessageRepo, UserRepo } from "./db-service";
-import { AddUserResultCode, ChatInfoResultCode, ClearChatResultCode, CreateChatResultCode, GetUserChatsResultCode, MessagePullResultCode, MessagePushResultCode, RemoveChatResultCode, RemoveUserResultCode, SetChatInfoResultCode } from "../declarations/enums";
+import { AddUserResultCode, ChatInfoResultCode, ClearChatResultCode, CreateChatResultCode, GetUserChatsResultCode, MessagePullResultCode, MessagePushResultCode, RemoveChatResultCode, RemoveMessageResultCode, RemoveUserResultCode, SetChatInfoResultCode } from "../declarations/enums";
 
 
 export module MessagingService {
@@ -52,8 +52,26 @@ export module MessagingService {
     }
 
     const msgs = await MessageRepo.find({where: { chatid: chatID, localmessageid: And(MoreThanOrEqual(offset), LessThanOrEqual(offset + count))}, take: count});
+    msgs.forEach((x) => x.messageid = 0);
     return new MessagePullResult(true, MessagePullResultCode.Success, msgs);
   }
+  export async function RemoveMesasge(token?: string, chatid?: number, messageid?: number): Promise<RemoveMessageResult> {
+    if (token == undefined || chatid == undefined || messageid == undefined) return new RemoveMessageResult(false, RemoveMessageResultCode.NullParameter) 
+    
+    const UserID = await TokenManager.AuthToken(token);
+    if (UserID == undefined) return new RemoveMessageResult(false, RemoveMessageResultCode.NoAuth);
+  
+    const Chat = await GetChat(chatid);
+    if (Chat == null) return new RemoveMessageResult(false, RemoveMessageResultCode.ChatNotExist);
+    if (!(await Chat.IsUserAvailable(UserID))) return new RemoveMessageResult(false, RemoveMessageResultCode.ChatNoAccess);
+
+    if (!(await MessageRepo.existsBy({ chatid: chatid, localmessageid: messageid }))) return new RemoveMessageResult(false, RemoveMessageResultCode.MessageNotFound);
+
+    MessageRepo.delete({ chatid: chatid, localmessageid: messageid });
+
+    return new RemoveMessageResult(true, RemoveMessageResultCode.Success);
+  } 
+
 
   export async function GetUserChats(token?: string): Promise<GetUserChatsResult> {
     if (token == undefined) return new GetUserChatsResult(false, GetUserChatsResultCode.NullParameter);
@@ -91,7 +109,7 @@ export module MessagingService {
     ChatUserRepo.save({ chatid: chat.chatid, userid: UserID, joindate: new Date() });
     for (let uid of userIDs) {
       if (!(await UserRepo.existsBy({ UserID: uid }))) continue;
-      await ChatUserRepo.save({ chatid: chat.chatid, userid: uid, joindate: new Date() });
+      await ChatUserRepo.save({ chatid: chat.chatid, userid: uid });
     }
 
     await chat.GetUsers();
@@ -219,103 +237,112 @@ export module MessagingService {
 
 export class MessagePushResult {
   public ok: boolean;
-  public code: number;
+  public status: number;
 
-  constructor (ok: boolean, code: number) {
+  constructor (ok: boolean, status: number) {
     this.ok = ok;
-    this.code = code;
+    this.status = status;
   }
 }
 export class MessagePullResult {
   public ok: boolean;
-  public code: number;
+  public status: number;
   public messages?: Message[];
 
-  constructor (ok: boolean, code: number, messages?: Message[]) {
+  constructor (ok: boolean, status: number, messages?: Message[]) {
     this.ok = ok;
-    this.code = code;
+    this.status = status;
     this.messages = messages;
+  }
+}
+export class RemoveMessageResult {
+  public ok: boolean;
+  public status: number;
+
+  constructor (ok: boolean, status: number) {
+    this.ok = ok;
+    this.status = status;
   }
 }
 
 export class CreateChatResult {
   public ok: boolean;
-  public code: number;
+  public status: number;
   public chat?: Chat;
 
-  constructor (ok: boolean, code: number, chat?: Chat) {
+  constructor (ok: boolean, status: number, chat?: Chat) {
     this.ok = ok;
-    this.code = code;
+    this.status = status;
     this.chat = chat;
   }
 }
 export class GetUserChatsResult {
   public ok: boolean;
-  public code: number;
+  public status: number;
   public chats?: Chat[];
 
-  constructor (ok: boolean, code: number, chats?: Chat[]) {
+  constructor (ok: boolean, status: number, chats?: Chat[]) {
     this.ok = ok;
-    this.code = code;
+    this.status = status;
     this.chats = chats;
   }
 }
 export class ClearChatResult {
   public ok: boolean;
-  public code: number;
+  public status: number;
   public affected?: number;
 
-  constructor (ok: boolean, code: number, affected?: number) {
+  constructor (ok: boolean, status: number, affected?: number) {
     this.ok = ok;
-    this.code = code;
+    this.status = status;
     this.affected = affected;
   }
 }
 export class RemoveChatResult {
   public ok: boolean;
-  public code: number;
+  public status: number;
 
-  constructor (ok: boolean, code: number) {
+  constructor (ok: boolean, status: number) {
     this.ok = ok;
-    this.code = code;
+    this.status = status;
   }
 }
 export class ChatInfoResult {
   public ok: boolean;
-  public code: number;
+  public status: number;
   public info?: ChatInfoObj;
 
-  constructor (ok: boolean, code: number, info?: ChatInfoObj) {
+  constructor (ok: boolean, status: number, info?: ChatInfoObj) {
     this.ok = ok;
-    this.code = code;
+    this.status = status;
     this.info = info;
   }
 }
 export class SetChatInfoResult {
   public ok: boolean;
-  public code: number;
+  public status: number;
 
-  constructor (ok: boolean, code: number) {
+  constructor (ok: boolean, status: number) {
     this.ok = ok;
-    this.code = code;
+    this.status = status;
   }
 }
 export class AddUserResult {
   public ok: boolean;
-  public code: number;
+  public status: number;
 
-  constructor (ok: boolean, code: number) {
+  constructor (ok: boolean, status: number) {
     this.ok = ok;
-    this.code = code;
+    this.status = status;
   }
 }
 export class RemoveUserResult {
   public ok: boolean;
-  public code: number;
+  public status: number;
 
-  constructor (ok: boolean, code: number) {
+  constructor (ok: boolean, status: number) {
     this.ok = ok;
-    this.code = code;
+    this.status = status;
   }
 }
 

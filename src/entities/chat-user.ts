@@ -8,6 +8,6 @@ export class ChatUser {
     @Column()
     public chatid: number = 0;
 
-    @Column({ type: "timestamp" })
+    @Column({ type: "timestamp", default: () => "CURRENT_TIMESTAMP" })
     public joindate: Date = new Date();
 }
