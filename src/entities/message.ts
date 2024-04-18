@@ -1,5 +1,6 @@
 import { Entity, PrimaryColumn, Column, PrimaryGeneratedColumn } from "typeorm";
 import { MessageFlag } from "../declarations/enums";
+import { UserRepo } from "../services/db-service";
 
 @Entity()
 export class Message {
@@ -24,6 +25,12 @@ export class Message {
     @Column()
     public senderid: number = 0;
 
+    public sender: string = "DELETED";
+
     @Column()
     public replyid: number = -1;
+
+    public async Load() {
+      this.sender = (await UserRepo.findOneBy({ UserID: this.senderid }))?.nickname || "DELETED";
+    }
 }

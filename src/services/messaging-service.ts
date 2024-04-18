@@ -127,7 +127,7 @@ export module MessagingService {
     for (let nick of nicknames) {
       ids.push((await UserRepo.findOneBy({ nickname: nick }))?.UserID || -1);
     }
-    
+
     let userIDs = [...new Set(ids)];
     if (!userIDs.includes(UserID)) userIDs.push(UserID);
     for (let uid of userIDs) {
@@ -223,8 +223,8 @@ export module MessagingService {
     
     return new SetChatInfoResult(true, SetChatInfoResultCode.Success);
   }
-  export async function AddUser(token?: string, chatid?: number, userid?: number): Promise<AddUserResult> {
-    if (token == undefined || chatid == undefined || userid == undefined) return new AddUserResult(false, AddUserResultCode.NullParameter) 
+  export async function AddUser(token?: string, chatid?: number, user?: string): Promise<AddUserResult> {
+    if (token == undefined || chatid == undefined || user == undefined) return new AddUserResult(false, AddUserResultCode.NullParameter) 
     
     const UserID = await TokenManager.AuthToken(token);
     if (UserID == undefined) return new AddUserResult(false, AddUserResultCode.NoAuth);
@@ -233,15 +233,16 @@ export module MessagingService {
     if (Chat == null) return new AddUserResult(false, AddUserResultCode.ChatNotExist);
     if (!(await Chat.IsUserAvailable(UserID))) return new AddUserResult(false, AddUserResultCode.ChatNoAccess);
 
-    if (!(await UserRepo.existsBy({ UserID: userid }))) return new AddUserResult(false, AddUserResultCode.UserNotFound);
-    if (await ChatUserRepo.existsBy({ chatid: chatid, userid: userid })) return new AddUserResult(false, AddUserResultCode.AlradyInGroup);
+    const aUser = await UserRepo.findOneBy({ nickname: user });
+    if (aUser == null) return new AddUserResult(false, AddUserResultCode.UserNotFound);
+    if (await ChatUserRepo.existsBy({ chatid: chatid, userid: aUser.UserID })) return new AddUserResult(false, AddUserResultCode.AlradyInGroup);
 
-    await ChatUserRepo.save({ chatid: chatid, userid: userid });
+    await ChatUserRepo.save({ chatid: chatid, userid: aUser.UserID });
     
     return new AddUserResult(true, AddUserResultCode.Success);
   }
-  export async function RemoveUser(token?: string, chatid?: number, userid?: number): Promise<RemoveUserResult> {
-    if (token == undefined || chatid == undefined || userid == undefined) return new RemoveUserResult(false, RemoveUserResultCode.NullParameter) 
+  export async function RemoveUser(token?: string, chatid?: number, user?: string): Promise<RemoveUserResult> {
+    if (token == undefined || chatid == undefined || user == undefined) return new RemoveUserResult(false, RemoveUserResultCode.NullParameter) 
     
     const UserID = await TokenManager.AuthToken(token);
     if (UserID == undefined) return new RemoveUserResult(false, RemoveUserResultCode.NoAuth);
@@ -250,10 +251,11 @@ export module MessagingService {
     if (Chat == null) return new RemoveUserResult(false, RemoveUserResultCode.ChatNotExist);
     if (!(await Chat.IsUserAvailable(UserID))) return new RemoveUserResult(false, RemoveUserResultCode.ChatNoAccess);
 
-    if (!(await UserRepo.existsBy({ UserID: userid }))) return new RemoveUserResult(false, RemoveUserResultCode.UserNotFound);
-    if (!(await ChatUserRepo.existsBy({ chatid: chatid, userid: userid }))) return new RemoveUserResult(false, RemoveUserResultCode.UserNotInGroup);
+    const aUser = await UserRepo.findOneBy({ nickname: user });
+    if (aUser == null) return new RemoveUserResult(false, RemoveUserResultCode.UserNotFound);
+    if (!(await ChatUserRepo.existsBy({ chatid: chatid, userid: aUser.UserID }))) return new RemoveUserResult(false, RemoveUserResultCode.UserNotInGroup);
 
-    await ChatUserRepo.delete({ chatid: chatid, userid: userid });
+    await ChatUserRepo.delete({ chatid: chatid, userid: aUser.UserID });
     
     return new RemoveUserResult(true, RemoveUserResultCode.Success);
   }
@@ -382,7 +384,7 @@ export class RemoveUserResult {
 export class ChatInfoObj {
   public title?: string;
   public description?: string;
-  public users?: number[];
+  public users?: string[];
   public messages?: number;
   public creatorid?: number;
   public creationdate?: Date;

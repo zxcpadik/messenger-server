@@ -267,9 +267,9 @@ app.post('/api/v0/client/chat/adduser', async (req: Request, res: Response) => {
 
   const token = req.headers['token']?.toString();
   const chatid = req.body["chatid"] as number | undefined;
-  const userid = req.body["userid"] as number | undefined;
+  const nickname = req.body["user"] as string | undefined;
 
-  const apires = await MessagingService.AddUser(token, chatid, userid);
+  const apires = await MessagingService.AddUser(token, chatid, nickname);
   if (process.env.DEBUG_MODE == "true") console.log(apires);
   res.json(apires);
 });
@@ -285,7 +285,7 @@ app.post('/api/v0/client/chat/removeuser', async (req: Request, res: Response) =
 
   const token = req.headers['token']?.toString();
   const chatid = req.body["chatid"] as number | undefined;
-  const userid = req.body["userid"] as number | undefined;
+  const userid = req.body["user"] as string | undefined;
 
   const apires = await MessagingService.RemoveUser(token, chatid, userid);
   if (process.env.DEBUG_MODE == "true") console.log(apires);

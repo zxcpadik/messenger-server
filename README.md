@@ -237,7 +237,7 @@ Add user into chat
 [POST] /api/v0/client/chat/adduser
     Args: JSON {
             chatid: int
-            userid: int
+            user: string
           }
     Header: token, session
     Return: JSON { ok: boolean, status: int }
@@ -257,7 +257,7 @@ Remove user from chat
 [POST] /api/v0/client/chat/removeuser
     Args: JSON {
             chatid: int
-            userid: int
+            user: string
           }
     Header: token, session
     Return: JSON { ok: boolean, status: int }
@@ -280,7 +280,7 @@ Message {
   localmessageid: int - Local ID of message
   chatid: int - ID of chat
   text: string
-  senderid: int - Sender UserID    
+  sender: string - Sender nickname    
   sentdate: date (UNIX) - Message send time as UNIX
   replyid: int - Reply UserID /*RESERVED IN DEV*/
   flag: int - /*RESERVED IN DEV*/
@@ -294,7 +294,7 @@ Chat {
   chatid: int
   creatorid: int
   creationdate: date (UNIX)
-  users: int[]
+  users: string[]
   isuser: boolean /*RESERVED IN DEV*/
   isgroup: boolean
 }
@@ -305,9 +305,9 @@ Chat {
 ChatInfoObj {
   title?: string
   description?: string
-  users?: number[]
-  messages?: number
-  creatorid?: number
+  users?: string[]
+  messages?: int
+  creatorid?: int
   creationdate?: Date
 }
 
