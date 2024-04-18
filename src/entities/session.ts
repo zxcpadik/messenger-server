@@ -13,9 +13,7 @@ export class Session {
   public IPAddress: string = "";
 
   public IsDecayed() {
-    var decay = this.DecayDate.getTime() < Date.now();
-    if (decay) SessionRepo.remove(this);
-    return decay;
+    return this.DecayDate.getTime() < Date.now();
   }
 
   public Renew() {
