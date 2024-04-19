@@ -12,7 +12,7 @@ export class Token {
     public DecayDate: Date = new Date(0);
 
     public IsDecayed() {
-        return this.DecayDate.getTime() < Date.now();
+        return this.DecayDate < new Date();
     }
 
     public Renew() {

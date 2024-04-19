@@ -1,6 +1,7 @@
-import { Entity, PrimaryColumn, Column, PrimaryGeneratedColumn } from "typeorm";
+import { Entity, PrimaryColumn, Column, PrimaryGeneratedColumn, OneToMany } from "typeorm";
 import { MessagingService } from "../services/messaging-service";
 import { ChatUserRepo, MessageRepo, UserRepo } from "../services/db-service";
+import { User } from "./user";
 
 @Entity()
 export class Chat {
@@ -25,9 +26,11 @@ export class Chat {
     @Column()
     public isgroup: boolean = false;
 
-    public users: string[] = [];
+    //@OneToMany((type) => User, (usr) => usr.nickname, { eager: true })
+    public users: string[]  = [];//| undefined;
 
     public async GetUsers() {
+      //return;
       let usersids = (await ChatUserRepo.findBy({ chatid: this.chatid })).map<number>((x) => x.userid);
       for (let id of usersids) this.users.push((await UserRepo.findOneBy({ UserID: id }))?.nickname || "");
     }
