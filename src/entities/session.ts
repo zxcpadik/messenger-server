@@ -13,11 +13,7 @@ export class Session {
   public IPAddress: string = "";
 
   public IsDecayed() {
-<<<<<<< Updated upstream
-    return this.DecayDate.getTime() < Date.now();
-=======
     return this.DecayDate < new Date();
->>>>>>> Stashed changes
   }
 
   public Renew() {

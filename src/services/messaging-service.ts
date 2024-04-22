@@ -256,6 +256,8 @@ export module MessagingService {
   }
   export async function SetChatInfo(token?: string, chatid?: number, title?: string, description?: string): Promise<SetChatInfoResult> {
     try {
+      title = (title == "") ? undefined : title;
+      description = (description == "") ? undefined : description;
       if (token == undefined || chatid == undefined || (title == undefined && description == undefined)) return new SetChatInfoResult(false, SetChatInfoResultCode.NullParameter) 
     
       const UserID = await TokenManager.AuthToken(token);

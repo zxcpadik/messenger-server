@@ -132,7 +132,6 @@ app.post('/api/v0/client/messages/pull', async (req: Request, res: Response) => 
   res.json(apires);
 });
 app.post('/api/v0/client/messages/push', async (req: Request, res: Response) => {
-  await Delay(5000);
   const IP = req.headers['x-forwarded-for']?.toString() || req.socket.remoteAddress || "";
   const Hash = req.headers['session']?.toString() || "";
   const Session = await SessionManager.GetSession(Hash, IP);
@@ -343,7 +342,7 @@ app.get('/', (req: Request, res: Response) => {
   res.send(`Server running.\n${new Date().toString()}`);
 })
 
-app.listen({ port: 8081, host: "0.0.0.0"}, () => {
+app.listen({ port: 8080, host: "0.0.0.0"}, () => {
   console.log(`[SERVER]: Server is running!`);
 });
 

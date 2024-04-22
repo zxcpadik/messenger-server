@@ -30,7 +30,7 @@ export module SessionManager {
   }
   export async function RenewSession(hash: string, ip: string) {
     try {
-      var s = await SessionRepo.findOneBy({ Hash: hash, IPAddress: ip});
+      var s = await SessionRepo.findOneBy({ Hash: hash, IPAddress: ip });
       if (s == null) return new Session();
       if (!s.IsDecayed()) {
           s.Renew();
