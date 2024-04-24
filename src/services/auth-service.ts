@@ -2,12 +2,14 @@ import { generate } from "randomstring";
 import { Token } from "../entities/token";
 import { User } from "../entities/user";
 import { TokenRepo, UserRepo } from "./db-service";
-import { AuthResultCode, RegisterResultCode, SetUserInfoResultCode, UserInfoResultCode } from "../declarations/enums";
+import { AuthResultCode, ConfirmAuth2FAResultCode, ConfirmEnable2FAResultCode, Disable2FAResultCode, Enable2FAResultCode, RegisterResultCode, SetUserInfoResultCode, UserInfoResultCode } from "../declarations/enums";
+import { TOTP } from "totp-generator"
+import { SessionManager } from "./session-manager";
 
 const UsernameCharset = "ABCDEFGHIJKLMNOPQRSTUVWXYZЯЮЭЬЫЪЩШЧЦХФУТСРПОНМЛКЙИЗЖЁЕДГВБАabcdefghijklmnopqrstuvwxyzабвгдеёжзийклмнопрстуфхцчшщъыьэюя1234567890_";
 const PasswordCharset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZЯЮЭЬЫЪЩШЧЦХФУТСРПОНМЛКЙИЗЖЁЕДГВБАabcdefghijklmnopqrstuvwxyzабвгдеёжзийклмнопрстуфхцчшщъыьэюя1234567890_!\"@ $%&/()=?\'`*+~#-_.,;:{[]}\<(><<)><(>><)>|';
 export function TestUsernameLegal(username?: string): boolean {
-  if (username == undefined || username.length < 6 || username.length > 64) return false;
+  if (username == undefined || username.length < 6 || username.length > 32) return false;
   username = username.toLowerCase();
   for (let c of username) {
     if (!UsernameCharset.includes(c)) return false;
@@ -49,7 +51,7 @@ export module TokenManager {
 }
 
 export module AuthService {
-  export async function AuthUser(credentials: AuthCredentials): Promise<AuthResult> {
+  export async function AuthUser(credentials: AuthCredentials, hash: string, ip: string): Promise<AuthResult> {
     try {
       if (credentials.username == undefined || credentials.password == undefined) return new AuthResult(false, AuthResultCode.NullParameter);
 
@@ -130,6 +132,77 @@ export module AuthService {
       return new SetUserInfoResult(false, SetUserInfoResultCode.InternalError);
     }
   }
+  export async function Enable2FA(token?: string): Promise<Enable2FAResult> {
+    try {
+      if (token == undefined) return new Enable2FAResult(false, Enable2FAResultCode.NullParameter);
+
+      const UserID = await TokenManager.AuthToken(token);
+      if (UserID == undefined) return new Enable2FAResult(false, Enable2FAResultCode.NoAuth);
+      const usr = await UserRepo.findOneBy({ UserID: UserID });
+      if (usr?.totpenabled) return new Enable2FAResult(false, Enable2FAResultCode.AlreadyEnabled);
+
+      const key = generate({ length: 12, charset: 'abcdefghijklmnopqrstuvwxyz234567' });
+      await UserRepo.update({ UserID: UserID }, { totpkey: key });
+      return new Enable2FAResult(true, Enable2FAResultCode.Success, key);
+    } catch (err) {
+      console.log(`[ERROR] AuthService::Enable2FA\n${err}`);
+      return new Enable2FAResult(false, Enable2FAResultCode.InternalError);
+    }
+  }
+  export async function ConfirmEnable2FA(token?: string, code?: string): Promise<ConfirmEnable2FAResult> {
+    try {
+      if (token == undefined || code == undefined) return new ConfirmEnable2FAResult(false, ConfirmEnable2FAResultCode.NullParameter);
+
+      const UserID = await TokenManager.AuthToken(token);
+      if (UserID == undefined) return new ConfirmEnable2FAResult(false, ConfirmEnable2FAResultCode.NoAuth);
+
+      const usr = await UserRepo.findOneBy({ UserID: UserID });
+      if (usr?.totpkey == "") return new ConfirmEnable2FAResult(false, ConfirmEnable2FAResultCode.TOTPNotEnabled);
+      if (!(usr?.Test2FACode(code))) return new ConfirmEnable2FAResult(false, ConfirmEnable2FAResultCode.TOTPIncorrect);
+
+      await UserRepo.update({ UserID: UserID }, { totpenabled: true });
+      return new ConfirmEnable2FAResult(true, ConfirmEnable2FAResultCode.Success);
+    } catch (err) {
+      console.log(`[ERROR] AuthService::ConfirmEnable2FA\n${err}`);
+      return new ConfirmEnable2FAResult(false, ConfirmEnable2FAResultCode.InternalError);
+    }
+  }
+  export async function Disable2FA(token?: string, code?: string): Promise<Disable2FAResult> {
+    try {
+      if (token == undefined || code == undefined) return new Disable2FAResult(false, Disable2FAResultCode.NullParameter);
+
+      const UserID = await TokenManager.AuthToken(token);
+      if (UserID == undefined) return new Disable2FAResult(false, Disable2FAResultCode.NoAuth);
+
+      const usr = await UserRepo.findOneBy({ UserID: UserID });
+      if (usr?.totpkey == "" || !(usr?.totpenabled)) return new Disable2FAResult(false, Disable2FAResultCode.TOTPNotEnabled);
+      if (!(usr?.Test2FACode(code))) return new Disable2FAResult(false, Disable2FAResultCode.TOTPIncorrect);
+
+      await UserRepo.update({ UserID: UserID }, { totpenabled: false, totpkey: "" });
+      return new Disable2FAResult(true, Disable2FAResultCode.Success);
+    } catch (err) {
+      console.log(`[ERROR] AuthService::Disable2FA\n${err}`);
+      return new Disable2FAResult(false, Disable2FAResultCode.InternalError);
+    }
+  }
+  export async function ConfirmAuth2FA(hash?: string, ip?: string, code?: string): Promise<ConfirmAuth2FAResult> {
+    try {
+      if (hash == undefined || code == undefined || ip == undefined) return new ConfirmAuth2FAResult(false, ConfirmAuth2FAResultCode.NullParameter);
+
+      const s = await SessionManager.GetSession(hash, ip);
+      if (s.userid == undefined) return new ConfirmAuth2FAResult(false, ConfirmAuth2FAResultCode.NoAuth);
+
+      const usr = await UserRepo.findOneBy({ UserID: s.userid });
+      if (usr?.totpkey == "" || !(usr?.totpenabled)) return new ConfirmAuth2FAResult(false, ConfirmAuth2FAResultCode.TOTPNotEnabled);
+      if (!(usr?.Test2FACode(code))) return new ConfirmAuth2FAResult(false, ConfirmAuth2FAResultCode.TOTPIncorrect);
+
+      const Token = await TokenManager.GenerateToken(usr.UserID);
+      return new ConfirmAuth2FAResult(true, ConfirmAuth2FAResultCode.Success, Token.hash);
+    } catch (err) {
+      console.log(`[ERROR] AuthService::ConfirmAuth2FA\n${err}`);
+      return new ConfirmAuth2FAResult(false, ConfirmAuth2FAResultCode.InternalError);
+    }
+  }
 }
 
 export class AuthCredentials {
@@ -176,6 +249,46 @@ export class UserInfoResult {
   }
 }
 export class SetUserInfoResult {
+  public ok: boolean;
+  public status: number;
+
+  constructor (ok: boolean, status: number) {
+    this.ok = ok;
+    this.status = status;
+  }
+}
+export class Enable2FAResult {
+  public ok: boolean;
+  public status: number;
+  public key?: string;
+
+  constructor (ok: boolean, status: number, key?: string) {
+    this.ok = ok;
+    this.status = status;
+    this.key = key;
+  }
+}
+export class ConfirmEnable2FAResult {
+  public ok: boolean;
+  public status: number;
+
+  constructor (ok: boolean, status: number) {
+    this.ok = ok;
+    this.status = status;
+  }
+}
+export class ConfirmAuth2FAResult {
+  public ok: boolean;
+  public status: number;
+  public token?: string;
+
+  constructor (ok: boolean, status: number, token?: string) {
+    this.ok = ok;
+    this.status = status;
+    this.token = token;
+  }
+}
+export class Disable2FAResult {
   public ok: boolean;
   public status: number;
 

@@ -6,6 +6,7 @@ export enum AuthResultCode {
   PasswordFormat      = 103,
   UserNotExists       = 104,
   PasswordIncorrect   = 105,
+  TOTPRequest         = 106,
   InternalError       = 109
 }
 export enum RegisterResultCode {
@@ -31,6 +32,37 @@ export enum SetUserInfoResultCode {
   NicknameFormat      = 133,
   NicknameBusy        = 134,
   InternalError       = 139
+}
+export enum Enable2FAResultCode {
+  Success             = 130,
+  NullParameter       = 131,
+  NoAuth              = 132,
+  AlreadyEnabled      = 133,
+  InternalError       = 139
+}
+export enum ConfirmEnable2FAResultCode {
+  Success             = 140,
+  NullParameter       = 141,
+  NoAuth              = 142,
+  TOTPIncorrect       = 143,
+  TOTPNotEnabled      = 144,
+  InternalError       = 149
+}
+export enum ConfirmAuth2FAResultCode {
+  Success             = 150,
+  NullParameter       = 151,
+  NoAuth              = 152,
+  TOTPIncorrect       = 153,
+  TOTPNotEnabled      = 154,
+  InternalError       = 159
+}
+export enum Disable2FAResultCode {
+  Success             = 160,
+  NullParameter       = 161,
+  NoAuth              = 162,
+  TOTPIncorrect       = 163,
+  TOTPNotEnabled      = 164,
+  InternalError       = 169
 }
 
 export enum MessagePushResultCode {

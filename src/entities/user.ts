@@ -1,6 +1,7 @@
 import { Entity, PrimaryColumn, Column, PrimaryGeneratedColumn } from "typeorm";
 import SHA256 from "sha256";
 import { generate } from "randomstring";
+import { TOTP } from "totp-generator"
 
 @Entity()
 export class User {
@@ -22,6 +23,12 @@ export class User {
   @Column({ type: "text" })
   public IPAddress: string = "";
 
+  @Column({ nullable: false, default: "false" })
+  public totpenabled: boolean = false;
+
+  @Column({ nullable: true, type: "text" })
+  public totpkey: string = "";
+
   public UpdatePassword(pass: string) {
     let salt1 = generate(16);
     let salt2 = generate(16);
@@ -36,5 +43,9 @@ export class User {
     let hash = SHA256([blocks[1], pass, blocks[2]].join());
   
     return hash === blocks[0];
+  }
+  public Test2FACode(code?: string) {
+    if (this.totpkey == "") return false;
+    return TOTP.generate(this.totpkey).otp == code;
   }
 }

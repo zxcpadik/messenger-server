@@ -2,3 +2,8 @@
 /node_modules
 /build
 .env
+ssl/certificate_ca.crt
+ssl/certificate.crt
+ssl/private.key
+/src/web
+/logs

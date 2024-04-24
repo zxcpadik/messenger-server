@@ -12,6 +12,9 @@ export class Session {
   @Column()
   public IPAddress: string = "";
 
+  @Column({ nullable: true })
+  public userid: number = -1;
+
   public IsDecayed() {
     return this.DecayDate < new Date();
   }

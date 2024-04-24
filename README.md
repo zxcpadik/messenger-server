@@ -30,6 +30,7 @@ User authorization
             103 - PasswordFormat
             104 - UserNotExists
             105 - PasswordIncorrect
+            106 - TOTPRequest
             109 - InternalError
 ```
 #### User:Register
@@ -60,7 +61,7 @@ User registration
             129 -  InternalError
 ```
 #### User:SetInfo
-User registration
+Change nickname
 ```
 [POST] /api/v0/user/setinfo
     Args: JSON {
@@ -74,6 +75,61 @@ User registration
             133 - NicknameFormat
             134 - NicknameBusy
             139 - InternalError
+```
+#### User:2FA-Enable
+Pre-enable 2FA
+```
+[POST] /api/v0/user/2fa/enable
+    Args:
+    Header: token, session
+    Return: JSON { ok: boolean, status: int, key?: string }
+    Status: 130 - Success
+            131 - NullParameter
+            132 - NoAuth
+            133 - AlreadyEnabled
+            139 - InternalError
+```
+#### User:2FA-Confirm
+Confirm enabling 2FA
+```
+[POST] /api/v0/user/2fa/confirm
+    Args: JSON { code: string }
+    Header: token, session
+    Return: JSON { ok: boolean, status: int }
+    Status: 140 - Success
+            141 - NullParameter
+            142 - NoAuth
+            143 - TOTPIncorrect
+            144 - TOTPNotEnabled
+            149 - InternalError
+```
+#### User:2FA-Auth
+Confirm auth with 2FA enabled
+```
+[POST] /api/v0/user/2fa/auth
+    Args: JSON { code: string }
+    Header: session
+    Return: JSON { ok: boolean, status: int, token?: string }
+    Status: 150 - Success
+            151 - NullParameter
+            152 - NoAuth
+            153 - TOTPIncorrect
+            154 - TOTPNotEnabled
+            159 - InternalError
+```
+#### User:2FA-Disable
+Disable 2FA
+```
+[POST] /api/v0/user/2fa/auth
+    Args: JSON { code: string }
+    Header: token, session
+    Return: JSON { ok: boolean, status: int }
+    Status: 160 - Success
+            161 - NullParameter
+            162 - NoAuth
+            163 - TOTPIncorrect
+            164 - TOTPNotEnabled
+            169 - InternalError
 ```
 ### Messages
 #### Client:Message:Push

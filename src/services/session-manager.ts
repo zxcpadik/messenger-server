@@ -43,6 +43,9 @@ export module SessionManager {
     }
   }
   export async function GetSession(hash: string, ip: string) {
-      return (await SessionRepo.findOneBy({ Hash: hash, IPAddress: ip})) || new Session();
+    return (await SessionRepo.findOneBy({ Hash: hash, IPAddress: ip})) || new Session();
+  }
+  export async function AuthSession(hash: string, ip: string, userid: number) {
+    return ((await SessionRepo.update({ Hash: hash, IPAddress: ip}, { userid: userid })).affected || 0) > 0;
   }
 }

@@ -11,7 +11,7 @@ export const AppDataSource = new DataSource({
     host: "localhost",
     port: 5432,
     username: "postgres",
-    password: "12345678",
+    password: "yFpulGPi4L9Mnq3j",
     database: "messenger",
     entities: [Session, ChatUser, Token, User, Message, Chat],
     synchronize: true,

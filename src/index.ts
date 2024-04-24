@@ -1,3 +1,17 @@
+import fs from 'fs';
+import util from 'util';
+import * as events from 'events';
+
+const log_file = fs.createWriteStream('./logs/main.log', {flags : 'w'});
+const log_stdout = process.stdout;
+const log_emit_ev = new events.EventEmitter();
+console.log = function(d) { 
+  log_file.write(util.format(d) + '\r\n');
+  log_stdout.write(util.format(d) + '\r\n');
+  log_emit_ev.emit('data', util.format(d) + '\r\n');
+};
+
+import https from "https";
 import dotenv from "dotenv";
 import "reflect-metadata"
 import './services/db-service'
@@ -25,6 +39,13 @@ app.use(formData.union());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+app.get('/log', async (req: Request, res: Response) => {
+  res.sendFile(__dirname + '/web/log.html');
+})
+app.get('/console.min.css', async (req: Request, res: Response) => {
+  res.sendFile(__dirname + '/web/console.min.css');
+})
+
 app.get('/api/v0/session/open', async (req: Request, res: Response) => {
   const IP = req.headers['x-forwarded-for']?.toString() || req.socket.remoteAddress;
   if (process.env.DEBUG_MODE == "true") console.log(`SESSION ${IP}`);
@@ -51,12 +72,12 @@ app.post('/api/v0/user/auth', async (req: Request, res: Response) => {
   if (process.env.DEBUG_MODE == "true") console.log(`AUTH: ${IP}:${Hash}:${Session.IsDecayed() ? "BAD" : "OK"}`);
   if (process.env.DEBUG_MODE == "true") console.log(req.body);
 
-  if (Session.IsDecayed()) return res.send("SESSION EXPIRED");
+  if (Session.IsDecayed()) return res.json({ ok: false, status: 0 });
 
   const username = (req.body["username"] as string | undefined)?.trim();
   const password = (req.body["password"] as string | undefined)?.trim();
 
-  const apires = await AuthService.AuthUser(new AuthCredentials(username?.toLowerCase(), password));
+  const apires = await AuthService.AuthUser(new AuthCredentials(username?.toLowerCase(), password), Hash, IP);
   if (process.env.DEBUG_MODE == "true") console.log(apires);
   res.json(apires);
 });
@@ -68,7 +89,7 @@ app.post('/api/v0/user/register', async (req: Request, res: Response) => {
   if (process.env.DEBUG_MODE == "true") console.log(`REGISTER: ${IP}:${Hash}:${Session.IsDecayed() ? "BAD" : "OK"}`);
   if (process.env.DEBUG_MODE == "true") console.log(req.body);
 
-  if (Session.IsDecayed()) return res.send("SESSION EXPIRED");
+  if (Session.IsDecayed()) return res.json({ ok: false, status: 0 });
 
   const username = (req.body["username"] as string | undefined)?.trim();
   const password = (req.body["password"] as string | undefined)?.trim();
@@ -86,7 +107,7 @@ app.post('/api/v0/user/info', async (req: Request, res: Response) => {
   if (process.env.DEBUG_MODE == "true") console.log(`USER-INFO-GET: ${IP}:${Hash}:${Session.IsDecayed() ? "BAD" : "OK"}`);
   if (process.env.DEBUG_MODE == "true") console.log(req.body);
 
-  if (Session.IsDecayed()) return res.send("SESSION EXPIRED");
+  if (Session.IsDecayed()) return res.json({ ok: false, status: 0 });
 
   const token = req.headers['token']?.toString();
 
@@ -102,12 +123,78 @@ app.post('/api/v0/user/setinfo', async (req: Request, res: Response) => {
   if (process.env.DEBUG_MODE == "true") console.log(`USER-INFO-SET: ${IP}:${Hash}:${Session.IsDecayed() ? "BAD" : "OK"}`);
   if (process.env.DEBUG_MODE == "true") console.log(req.body);
 
-  if (Session.IsDecayed()) return res.send("SESSION EXPIRED");
+  if (Session.IsDecayed()) return res.json({ ok: false, status: 0 });
 
   const token = req.headers['token']?.toString();
   const nickname = (req.body["nickname"] as string | undefined)?.trim();
 
   const apires = await AuthService.SetInfo(token, nickname);
+  if (process.env.DEBUG_MODE == "true") console.log(apires);
+  res.json(apires);
+});
+app.post('/api/v0/user/2fa/enable', async (req: Request, res: Response) => {
+  const IP = req.headers['x-forwarded-for']?.toString() || req.socket.remoteAddress || "";
+  const Hash = req.headers['session']?.toString() || "";
+  const Session = await SessionManager.GetSession(Hash, IP);
+
+  if (process.env.DEBUG_MODE == "true") console.log(`USER-2FA-ENABLE: ${IP}:${Hash}:${Session.IsDecayed() ? "BAD" : "OK"}`);
+  if (process.env.DEBUG_MODE == "true") console.log(req.body);
+
+  if (Session.IsDecayed()) return res.json({ ok: false, status: 0 });
+
+  const token = req.headers['token']?.toString();
+
+  const apires = await AuthService.Enable2FA(token);
+  if (process.env.DEBUG_MODE == "true") console.log(apires);
+  res.json(apires);
+});
+app.post('/api/v0/user/2fa/disable', async (req: Request, res: Response) => {
+  const IP = req.headers['x-forwarded-for']?.toString() || req.socket.remoteAddress || "";
+  const Hash = req.headers['session']?.toString() || "";
+  const Session = await SessionManager.GetSession(Hash, IP);
+
+  if (process.env.DEBUG_MODE == "true") console.log(`USER-2FA-DISABLE: ${IP}:${Hash}:${Session.IsDecayed() ? "BAD" : "OK"}`);
+  if (process.env.DEBUG_MODE == "true") console.log(req.body);
+
+  if (Session.IsDecayed()) return res.json({ ok: false, status: 0 });
+
+  const token = req.headers['token']?.toString();
+  const code = (req.body["code"] as string | undefined)?.trim();
+
+  const apires = await AuthService.Disable2FA(token, code);
+  if (process.env.DEBUG_MODE == "true") console.log(apires);
+  res.json(apires);
+});
+app.post('/api/v0/user/2fa/auth', async (req: Request, res: Response) => {
+  const IP = req.headers['x-forwarded-for']?.toString() || req.socket.remoteAddress || "";
+  const Hash = req.headers['session']?.toString() || "";
+  const Session = await SessionManager.GetSession(Hash, IP);
+
+  if (process.env.DEBUG_MODE == "true") console.log(`USER-2FA-AUTH: ${IP}:${Hash}:${Session.IsDecayed() ? "BAD" : "OK"}`);
+  if (process.env.DEBUG_MODE == "true") console.log(req.body);
+
+  if (Session.IsDecayed()) return res.json({ ok: false, status: 0 });
+
+  const code = (req.body["code"] as string | undefined)?.trim();
+
+  const apires = await AuthService.ConfirmAuth2FA(Hash, IP, code);
+  if (process.env.DEBUG_MODE == "true") console.log(apires);
+  res.json(apires);
+});
+app.post('/api/v0/user/2fa/confirm', async (req: Request, res: Response) => {
+  const IP = req.headers['x-forwarded-for']?.toString() || req.socket.remoteAddress || "";
+  const Hash = req.headers['session']?.toString() || "";
+  const Session = await SessionManager.GetSession(Hash, IP);
+
+  if (process.env.DEBUG_MODE == "true") console.log(`USER-2FA-CONFIRM: ${IP}:${Hash}:${Session.IsDecayed() ? "BAD" : "OK"}`);
+  if (process.env.DEBUG_MODE == "true") console.log(req.body);
+
+  if (Session.IsDecayed()) return res.json({ ok: false, status: 0 });
+
+  const token = req.headers['token']?.toString();
+  const code = (req.body["code"] as string | undefined)?.trim();
+
+  const apires = await AuthService.ConfirmEnable2FA(token, code);
   if (process.env.DEBUG_MODE == "true") console.log(apires);
   res.json(apires);
 });
@@ -120,7 +207,7 @@ app.post('/api/v0/client/messages/pull', async (req: Request, res: Response) => 
   if (process.env.DEBUG_MODE == "true") console.log(`MSG-PULL: ${IP}:${Hash}:${Session.IsDecayed() ? "BAD" : "OK"}`);
   if (process.env.DEBUG_MODE == "true") console.log(req.body);
 
-  if (Session.IsDecayed()) return res.send("SESSION EXPIRED");
+  if (Session.IsDecayed()) return res.json({ ok: false, status: 0 });
 
   const token = req.headers['token']?.toString();
   const offset = req.body["options"]?.["offset"] as number | undefined;
@@ -139,7 +226,7 @@ app.post('/api/v0/client/messages/push', async (req: Request, res: Response) => 
   if (process.env.DEBUG_MODE == "true") console.log(`MSG-PUSH: ${IP}:${Hash}:${Session.IsDecayed() ? "BAD" : "OK"}`);
   if (process.env.DEBUG_MODE == "true") console.log(req.body);
 
-  if (Session.IsDecayed()) return res.send("SESSION EXPIRED");
+  if (Session.IsDecayed()) return res.json({ ok: false, status: 0 });
   const token = req.headers['token']?.toString();
   const text = (req.body["text"] as string | undefined)?.trim();
   const chatid = req.body["chatid"] as number | undefined;
@@ -156,7 +243,7 @@ app.post('/api/v0/client/messages/remove', async (req: Request, res: Response) =
   if (process.env.DEBUG_MODE == "true") console.log(`MSG-REMOVE: ${IP}:${Hash}:${Session.IsDecayed() ? "BAD" : "OK"}`);
   if (process.env.DEBUG_MODE == "true") console.log(req.body);
 
-  if (Session.IsDecayed()) return res.send("SESSION EXPIRED");
+  if (Session.IsDecayed()) return res.json({ ok: false, status: 0 });
 
   const token = req.headers['token']?.toString();
   const chatid = req.body["chatid"] as number | undefined;
@@ -174,7 +261,7 @@ app.post('/api/v0/client/messages/edit', async (req: Request, res: Response) => 
   if (process.env.DEBUG_MODE == "true") console.log(`MSG-EDIT: ${IP}:${Hash}:${Session.IsDecayed() ? "BAD" : "OK"}`);
   if (process.env.DEBUG_MODE == "true") console.log(req.body);
 
-  if (Session.IsDecayed()) return res.send("SESSION EXPIRED");
+  if (Session.IsDecayed()) return res.json({ ok: false, status: 0 });
 
   const token = req.headers['token']?.toString();
   const chatid = req.body["chatid"] as number | undefined;
@@ -194,7 +281,7 @@ app.post('/api/v0/client/chat/create', async (req: Request, res: Response) => {
   if (process.env.DEBUG_MODE == "true") console.log(`CHAT-CREATE: ${IP}:${Hash}:${Session.IsDecayed() ? "BAD" : "OK"}`);
   if (process.env.DEBUG_MODE == "true") console.log(req.body);
 
-  if (Session.IsDecayed()) return res.send("SESSION EXPIRED");
+  if (Session.IsDecayed()) return res.json({ ok: false, status: 0 });
 
   const token = req.headers['token']?.toString();
   const nicknames = req.body["users"] as string[] | undefined;
@@ -213,7 +300,7 @@ app.post('/api/v0/client/chat/get', async (req: Request, res: Response) => {
   if (process.env.DEBUG_MODE == "true") console.log(`CHAT-GET: ${IP}:${Hash}:${Session.IsDecayed() ? "BAD" : "OK"}`);
   if (process.env.DEBUG_MODE == "true") console.log(req.body);
 
-  if (Session.IsDecayed()) return res.send("SESSION EXPIRED");
+  if (Session.IsDecayed()) return res.json({ ok: false, status: 0 });
 
   const token = req.headers['token']?.toString();
 
@@ -229,7 +316,7 @@ app.post('/api/v0/client/chat/clear', async (req: Request, res: Response) => {
   if (process.env.DEBUG_MODE == "true") console.log(`CHAT-CLEAR: ${IP}:${Hash}:${Session.IsDecayed() ? "BAD" : "OK"}`);
   if (process.env.DEBUG_MODE == "true") console.log(req.body);
 
-  if (Session.IsDecayed()) return res.send("SESSION EXPIRED");
+  if (Session.IsDecayed()) return res.json({ ok: false, status: 0 });
 
   const token = req.headers['token']?.toString();
   const chatid = req.body["chatid"] as number | undefined;
@@ -246,7 +333,7 @@ app.post('/api/v0/client/chat/remove', async (req: Request, res: Response) => {
   if (process.env.DEBUG_MODE == "true") console.log(`CHAT-REMOVE: ${IP}:${Hash}:${Session.IsDecayed() ? "BAD" : "OK"}`);
   if (process.env.DEBUG_MODE == "true") console.log(req.body);
 
-  if (Session.IsDecayed()) return res.send("SESSION EXPIRED");
+  if (Session.IsDecayed()) return res.json({ ok: false, status: 0 });
 
   const token = req.headers['token']?.toString();
   const chatid = req.body["chatid"] as number | undefined;
@@ -263,7 +350,7 @@ app.post('/api/v0/client/chat/info', async (req: Request, res: Response) => {
   if (process.env.DEBUG_MODE == "true") console.log(`CHAT-REMOVE: ${IP}:${Hash}:${Session.IsDecayed() ? "BAD" : "OK"}`);
   if (process.env.DEBUG_MODE == "true") console.log(req.body);
 
-  if (Session.IsDecayed()) return res.send("SESSION EXPIRED");
+  if (Session.IsDecayed()) return res.json({ ok: false, status: 0 });
 
   const token = req.headers['token']?.toString();
   const chatid = req.body["chatid"] as number | undefined;
@@ -280,7 +367,7 @@ app.post('/api/v0/client/chat/setinfo', async (req: Request, res: Response) => {
   if (process.env.DEBUG_MODE == "true") console.log(`CHAT-SETINFO: ${IP}:${Hash}:${Session.IsDecayed() ? "BAD" : "OK"}`);
   if (process.env.DEBUG_MODE == "true") console.log(req.body);
 
-  if (Session.IsDecayed()) return res.send("SESSION EXPIRED");
+  if (Session.IsDecayed()) return res.json({ ok: false, status: 0 });
 
   const token = req.headers['token']?.toString();
   const chatid = req.body["chatid"] as number | undefined;
@@ -299,7 +386,7 @@ app.post('/api/v0/client/chat/adduser', async (req: Request, res: Response) => {
   if (process.env.DEBUG_MODE == "true") console.log(`CHAT-ADDUSER: ${IP}:${Hash}:${Session.IsDecayed() ? "BAD" : "OK"}`);
   if (process.env.DEBUG_MODE == "true") console.log(req.body);
 
-  if (Session.IsDecayed()) return res.send("SESSION EXPIRED");
+  if (Session.IsDecayed()) return res.json({ ok: false, status: 0 });
 
   const token = req.headers['token']?.toString();
   const chatid = req.body["chatid"] as number | undefined;
@@ -317,7 +404,7 @@ app.post('/api/v0/client/chat/removeuser', async (req: Request, res: Response) =
   if (process.env.DEBUG_MODE == "true") console.log(`CHAT-REMOVEUSER: ${IP}:${Hash}:${Session.IsDecayed() ? "BAD" : "OK"}`);
   if (process.env.DEBUG_MODE == "true") console.log(req.body);
 
-  if (Session.IsDecayed()) return res.send("SESSION EXPIRED");
+  if (Session.IsDecayed()) return res.json({ ok: false, status: 0 });
 
   const token = req.headers['token']?.toString();
   const chatid = req.body["chatid"] as number | undefined;
@@ -342,9 +429,28 @@ app.get('/', (req: Request, res: Response) => {
   res.send(`Server running.\n${new Date().toString()}`);
 })
 
-app.listen({ port: 8080, host: "0.0.0.0"}, () => {
-  console.log(`[SERVER]: Server is running!`);
+var pkey = fs.readFileSync("ssl/" + process.env.HTTPS_PKEY, "utf8");
+var cert = fs.readFileSync("ssl/" + process.env.HTTPS_CERT, "utf8");
+var chain = fs.readFileSync("ssl/" + process.env.HTTPS_CA, "utf8");
+var credentials = { key: pkey, cert: cert, ca: chain };
+var httpsServer = https.createServer(credentials, app);
+
+import * as wst from 'ws';
+
+const expressWs = new wst.WebSocketServer({ server: httpsServer });
+expressWs.on('connection', (ws, r) => {
+  let _s = (x: any) => ws.send(x);
+  log_emit_ev.on('data', _s)
+  ws.on('close', () => log_emit_ev.off('data', _s));
+})
+
+httpsServer.listen(443, () => {
+    console.log(`[HTTPS] Server listening on port 443`);
 });
+
+//httpServer.listen(8080, () => {
+//  console.log(`[HTTP] Server listening on port 8080`);
+//});
 
 import * as child_process from "child_process";
 
@@ -399,3 +505,22 @@ setInterval(() => {
     console.log(`[Network]: In: ${networkSpeeds.download["kb/s"].toFixed(2)}kb/s Out: ${networkSpeeds.upload["kb/s"].toFixed(2)}kb/s`);
   });
 }, 3000);
+
+import OS from "os-utils";
+setInterval(() => {
+  OS.cpuUsage(function (v) {
+    let total = (OS.totalmem() / 1024).toFixed(1);
+    let free = ((OS.totalmem() - OS.freemem()) / 1024).toFixed(1);
+    let percent = OS.freememPercentage() * 100;
+
+    console.log(
+      `[${new Date().toTimeString().split(' ')[0]}] CPU: ${(v * 100).toFixed(
+        1
+      )}%\tMEM: ${free}/${total} GiB ${(100 - percent).toFixed(
+        1
+      )}% Used\tHeap: ${(process.memoryUsage().heapUsed / 1048576).toFixed(
+        1
+      )} MiB`
+    );
+  });
+}, 60000);
