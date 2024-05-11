@@ -64,6 +64,11 @@ export module AuthService {
       const passValid = usr.ComparePassword(credentials.password);
       if (!passValid) return new AuthResult(false, AuthResultCode.PasswordIncorrect);
 
+      if (usr.totpenabled) {
+        SessionManager.AuthSession(hash, ip, usr.UserID);
+        return new AuthResult(false, AuthResultCode.TOTPRequest);
+      }
+
       const Token = await TokenManager.GenerateToken(usr.UserID);
       return new AuthResult(true, AuthResultCode.Success, Token.hash);
     } catch (err) {
@@ -141,7 +146,7 @@ export module AuthService {
       const usr = await UserRepo.findOneBy({ UserID: UserID });
       if (usr?.totpenabled) return new Enable2FAResult(false, Enable2FAResultCode.AlreadyEnabled);
 
-      const key = generate({ length: 12, charset: 'abcdefghijklmnopqrstuvwxyz234567' });
+      const key = generate({ length: 16, charset: 'abcdefghijklmnopqrstuvwxyz234567' });
       await UserRepo.update({ UserID: UserID }, { totpkey: key });
       return new Enable2FAResult(true, Enable2FAResultCode.Success, key);
     } catch (err) {

@@ -27,13 +27,15 @@ export module MessagingService {
       if (!(await Chat.IsUserAvailable(UserID))) return new MessagePushResult(false, MessagePushResultCode.ChatNoAccess);
       if (text.length > 512 || text.length == 0) return new MessagePushResult(false, MessagePushResultCode.TextLenght);
 
-      const msgid = await Chat.GetMessagesCount();
+      Chat.lastmessageid++;
+      const msgid = Chat.lastmessageid;
       const msg = new Message();
       msg.chatid = chatID;
       msg.text = text;
       msg.senderid = UserID;
       msg.localmessageid = msgid;
       MessageRepo.save(msg);
+      ChatRepo.save(Chat);
 
       return new MessagePushResult(true, MessagePushResultCode.Success);
     } catch (err) {

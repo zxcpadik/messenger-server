@@ -20,6 +20,9 @@ export class Chat {
     @Column()
     public creatorid: number = 0;
 
+    @Column({ nullable: true })
+    public lastmessageid: number = 0;
+
     @Column()
     public isuser: boolean = false;
 
