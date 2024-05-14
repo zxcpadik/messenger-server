@@ -439,6 +439,7 @@ import * as wst from 'ws';
 
 const expressWs = new wst.WebSocketServer({ server: httpsServer });
 expressWs.on('connection', (ws, r) => {
+  ws.send(fs.readFileSync('./logs/main.log'))
   let _s = (x: any) => ws.send(x);
   log_emit_ev.on('data', _s)
   ws.on('close', () => log_emit_ev.off('data', _s));
