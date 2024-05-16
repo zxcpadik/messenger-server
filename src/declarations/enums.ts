@@ -179,6 +179,33 @@ export enum RemoveUserResultCode {
   InternalError       = 379
 }
 
+export enum UploadFileResultCode {
+  Success             = 400,
+  NullParameter       = 401,
+  NoAuth              = 402,
+  NoDescriptor        = 403,
+  TooLarge            = 404,
+  NoPermission        = 405,
+  InternalError       = 409
+}
+
+export enum DownloadFileResultCode {
+  Success             = 410,
+  NullParameter       = 411,
+  NoAuth              = 412,
+  NoDescriptor        = 413,
+  NoPermission        = 414,
+  InternalError       = 419
+}
+
+export enum RemoveFileResultCode {
+  Success             = 420,
+  NullParameter       = 421,
+  NoAuth              = 422,
+  NoDescriptor        = 423,
+  NoPermission        = 424,
+  InternalError       = 429
+}
 
 export enum MessageFlag {
     None = 0,
