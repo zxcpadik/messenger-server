@@ -185,7 +185,9 @@ export enum UploadFileResultCode {
   NoAuth              = 402,
   NoDescriptor        = 403,
   TooLarge            = 404,
-  NoPermission        = 405,
+  AlreadyUpload       = 405,
+  HashNotSame         = 406,
+  NoPermission        = 408,
   InternalError       = 409
 }
 
@@ -194,7 +196,7 @@ export enum DownloadFileResultCode {
   NullParameter       = 411,
   NoAuth              = 412,
   NoDescriptor        = 413,
-  NoPermission        = 414,
+  NoPermission        = 418,
   InternalError       = 419
 }
 
@@ -203,7 +205,7 @@ export enum RemoveFileResultCode {
   NullParameter       = 421,
   NoAuth              = 422,
   NoDescriptor        = 423,
-  NoPermission        = 424,
+  NoPermission        = 428,
   InternalError       = 429
 }
 

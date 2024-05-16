@@ -6,6 +6,7 @@ import { TokenManager } from "./auth-service";
 import { UploadFileResultCode } from "../declarations/enums";
 import * as fs from 'node:fs'
 import path from "node:path";
+import { MD5 } from '../utils/hash-file'
 
 
 
@@ -26,20 +27,31 @@ export module StorageService {
 
   }
 
-  export async function UploadFile(token?: string, descriptor?: string, temppath?: string) {
-    if (token == undefined || descriptor == undefined || temppath == undefined) return new UploadFileResult(false, UploadFileResultCode.NullParameter);
+  export async function UploadFile(token?: string, descriptor?: string, temppath?: string, hash?: string) {
+    try {
+      if (token == undefined || descriptor == undefined || temppath == undefined || hash == undefined) return new UploadFileResult(false, UploadFileResultCode.NullParameter);
 
-    const UserID = await TokenManager.AuthToken(token);
-    if (UserID == undefined) return new UploadFileResult(false, UploadFileResultCode.NoAuth);
-    
-    let meta = await MetaRepo.findOneBy({ descriptor: descriptor });
-    if (meta == null) return new UploadFileResult(false, UploadFileResultCode.NoDescriptor);
-
-    let stat = fs.statSync(temppath);
-    if ((stat.size / 1048576) > 128) return new UploadFileResult(false, UploadFileResultCode.TooLarge);
-
-    fs.copyFileSync(temppath, storagePath(meta.descriptor));
-    return new UploadFileResult(true, UploadFileResultCode.Success);
+      const UserID = await TokenManager.AuthToken(token);
+      if (UserID == undefined) return new UploadFileResult(false, UploadFileResultCode.NoAuth);
+      
+      let meta = await MetaRepo.findOneBy({ descriptor: descriptor });
+      if (meta == null) return new UploadFileResult(false, UploadFileResultCode.NoDescriptor);
+      if (meta.size != -1) return new UploadFileResult(false, UploadFileResultCode.AlreadyUpload);
+  
+      let stat = fs.statSync(temppath);
+      if ((stat.size / 1048576) > 128) return new UploadFileResult(false, UploadFileResultCode.TooLarge);
+  
+      let path = storagePath(meta.descriptor);
+      fs.copyFileSync(temppath, storagePath(meta.descriptor));
+      let _hash = await MD5(path);
+      if (!_hash) return new UploadFileResult(false, UploadFileResultCode.InternalError);
+      if (_hash !== hash) return new UploadFileResult(false, UploadFileResultCode.HashNotSame);
+  
+      return new UploadFileResult(true, UploadFileResultCode.Success);
+    } catch (err) {
+      console.log(`[ERROR] StorageService::UploadFile\n${err}`);
+      return new UploadFileResult(false, UploadFileResultCode.InternalError);
+    }
   }
 
   export async function RemoveFile(descriptor?: string) {
