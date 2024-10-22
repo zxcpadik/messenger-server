@@ -22,10 +22,11 @@ import { SessionManager } from "./services/session-manager";
 import { AuthCredentials, AuthService } from "./services/auth-service";
 import { MessagingService } from "./services/messaging-service";
 import { terminal } from "terminal-kit";
+var cookieParser = require('cookie-parser')
 
 dotenv.config();
 
-const app: Express = express();
+const app = express();
 
 const formDataOptions = {
   uploadDir: os.tmpdir(),
@@ -38,6 +39,7 @@ app.use(formData.union());
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser())
 
 app.get('/log', async (req: Request, res: Response) => {
   res.sendFile(__dirname + '/web/log.html');
@@ -46,13 +48,13 @@ app.get('/console.min.css', async (req: Request, res: Response) => {
   res.sendFile(__dirname + '/web/console.min.css');
 })
 
-app.get('/api/v0/session/open', async (req: Request, res: Response) => {
+app.get('/api/v0/session/open', async (req: Request, res: Response): Promise<any> => {
   const IP = req.headers['x-forwarded-for']?.toString() || req.socket.remoteAddress;
   if (process.env.DEBUG_MODE == "true") console.log(`SESSION ${IP}`);
   if (!IP) return res.send();
   res.send((await SessionManager.OpenNewSession(IP)).Hash);
 });
-app.get('/api/v0/session/pulse', async (req: Request, res: Response) => {
+app.get('/api/v0/session/pulse', async (req: Request, res: Response): Promise<any> => {
   const IP = req.headers['x-forwarded-for']?.toString() || req.socket.remoteAddress;
   const Hash = req.headers['session']?.toString();
   if (!IP || !Hash) {
@@ -64,7 +66,7 @@ app.get('/api/v0/session/pulse', async (req: Request, res: Response) => {
   res.send(s.IsDecayed() ? "0" : "1");
 });
 
-app.post('/api/v0/user/auth', async (req: Request, res: Response) => {
+app.post('/api/v0/user/auth', async (req: Request, res: Response): Promise<any> => {
   const IP = req.headers['x-forwarded-for']?.toString() || req.socket.remoteAddress || "";
   const Hash = req.headers['session']?.toString() || "";
   const Session = await SessionManager.GetSession(Hash, IP);
@@ -81,7 +83,7 @@ app.post('/api/v0/user/auth', async (req: Request, res: Response) => {
   if (process.env.DEBUG_MODE == "true") console.log(apires);
   res.json(apires);
 });
-app.post('/api/v0/user/register', async (req: Request, res: Response) => {
+app.post('/api/v0/user/register', async (req: Request, res: Response): Promise<any> => {
   const IP = req.headers['x-forwarded-for']?.toString() || req.socket.remoteAddress || "";
   const Hash = req.headers['session']?.toString() || "";
   const Session = await SessionManager.GetSession(Hash, IP);
@@ -99,7 +101,7 @@ app.post('/api/v0/user/register', async (req: Request, res: Response) => {
   if (process.env.DEBUG_MODE == "true") console.log(apires);
   res.json(apires);
 });
-app.post('/api/v0/user/info', async (req: Request, res: Response) => {
+app.post('/api/v0/user/info', async (req: Request, res: Response): Promise<any> => {
   const IP = req.headers['x-forwarded-for']?.toString() || req.socket.remoteAddress || "";
   const Hash = req.headers['session']?.toString() || "";
   const Session = await SessionManager.GetSession(Hash, IP);
@@ -115,7 +117,7 @@ app.post('/api/v0/user/info', async (req: Request, res: Response) => {
   if (process.env.DEBUG_MODE == "true") console.log(apires);
   res.json(apires);
 });
-app.post('/api/v0/user/setinfo', async (req: Request, res: Response) => {
+app.post('/api/v0/user/setinfo', async (req: Request, res: Response): Promise<any> => {
   const IP = req.headers['x-forwarded-for']?.toString() || req.socket.remoteAddress || "";
   const Hash = req.headers['session']?.toString() || "";
   const Session = await SessionManager.GetSession(Hash, IP);
@@ -132,7 +134,7 @@ app.post('/api/v0/user/setinfo', async (req: Request, res: Response) => {
   if (process.env.DEBUG_MODE == "true") console.log(apires);
   res.json(apires);
 });
-app.post('/api/v0/user/2fa/enable', async (req: Request, res: Response) => {
+app.post('/api/v0/user/2fa/enable', async (req: Request, res: Response): Promise<any> => {
   const IP = req.headers['x-forwarded-for']?.toString() || req.socket.remoteAddress || "";
   const Hash = req.headers['session']?.toString() || "";
   const Session = await SessionManager.GetSession(Hash, IP);
@@ -148,7 +150,7 @@ app.post('/api/v0/user/2fa/enable', async (req: Request, res: Response) => {
   if (process.env.DEBUG_MODE == "true") console.log(apires);
   res.json(apires);
 });
-app.post('/api/v0/user/2fa/disable', async (req: Request, res: Response) => {
+app.post('/api/v0/user/2fa/disable', async (req: Request, res: Response): Promise<any> => {
   const IP = req.headers['x-forwarded-for']?.toString() || req.socket.remoteAddress || "";
   const Hash = req.headers['session']?.toString() || "";
   const Session = await SessionManager.GetSession(Hash, IP);
@@ -165,7 +167,7 @@ app.post('/api/v0/user/2fa/disable', async (req: Request, res: Response) => {
   if (process.env.DEBUG_MODE == "true") console.log(apires);
   res.json(apires);
 });
-app.post('/api/v0/user/2fa/auth', async (req: Request, res: Response) => {
+app.post('/api/v0/user/2fa/auth', async (req: Request, res: Response): Promise<any> => {
   const IP = req.headers['x-forwarded-for']?.toString() || req.socket.remoteAddress || "";
   const Hash = req.headers['session']?.toString() || "";
   const Session = await SessionManager.GetSession(Hash, IP);
@@ -181,7 +183,7 @@ app.post('/api/v0/user/2fa/auth', async (req: Request, res: Response) => {
   if (process.env.DEBUG_MODE == "true") console.log(apires);
   res.json(apires);
 });
-app.post('/api/v0/user/2fa/confirm', async (req: Request, res: Response) => {
+app.post('/api/v0/user/2fa/confirm', async (req: Request, res: Response): Promise<any> => {
   const IP = req.headers['x-forwarded-for']?.toString() || req.socket.remoteAddress || "";
   const Hash = req.headers['session']?.toString() || "";
   const Session = await SessionManager.GetSession(Hash, IP);
@@ -199,7 +201,7 @@ app.post('/api/v0/user/2fa/confirm', async (req: Request, res: Response) => {
   res.json(apires);
 });
 
-app.post('/api/v0/client/messages/pull', async (req: Request, res: Response) => {
+app.post('/api/v0/client/messages/pull', async (req: Request, res: Response): Promise<any> => {
   const IP = req.headers['x-forwarded-for']?.toString() || req.socket.remoteAddress || "";
   const Hash = req.headers['session']?.toString() || "";
   const Session = await SessionManager.GetSession(Hash, IP);
@@ -218,7 +220,7 @@ app.post('/api/v0/client/messages/pull', async (req: Request, res: Response) => 
   if (process.env.DEBUG_MODE == "true") console.log(apires);
   res.json(apires);
 });
-app.post('/api/v0/client/messages/push', async (req: Request, res: Response) => {
+app.post('/api/v0/client/messages/push', async (req: Request, res: Response): Promise<any> => {
   const IP = req.headers['x-forwarded-for']?.toString() || req.socket.remoteAddress || "";
   const Hash = req.headers['session']?.toString() || "";
   const Session = await SessionManager.GetSession(Hash, IP);
@@ -235,7 +237,7 @@ app.post('/api/v0/client/messages/push', async (req: Request, res: Response) => 
   if (process.env.DEBUG_MODE == "true") console.log(apires);
   res.json(apires);
 });
-app.post('/api/v0/client/messages/remove', async (req: Request, res: Response) => {
+app.post('/api/v0/client/messages/remove', async (req: Request, res: Response): Promise<any> => {
   const IP = req.headers['x-forwarded-for']?.toString() || req.socket.remoteAddress || "";
   const Hash = req.headers['session']?.toString() || "";
   const Session = await SessionManager.GetSession(Hash, IP);
@@ -253,7 +255,7 @@ app.post('/api/v0/client/messages/remove', async (req: Request, res: Response) =
   if (process.env.DEBUG_MODE == "true") console.log(apires);
   res.json(apires);
 });
-app.post('/api/v0/client/messages/edit', async (req: Request, res: Response) => {
+app.post('/api/v0/client/messages/edit', async (req: Request, res: Response): Promise<any> => {
   const IP = req.headers['x-forwarded-for']?.toString() || req.socket.remoteAddress || "";
   const Hash = req.headers['session']?.toString() || "";
   const Session = await SessionManager.GetSession(Hash, IP);
@@ -273,7 +275,7 @@ app.post('/api/v0/client/messages/edit', async (req: Request, res: Response) => 
   res.json(apires);
 });
 
-app.post('/api/v0/client/chat/create', async (req: Request, res: Response) => {
+app.post('/api/v0/client/chat/create', async (req: Request, res: Response): Promise<any> => {
   const IP = req.headers['x-forwarded-for']?.toString() || req.socket.remoteAddress || "";
   const Hash = req.headers['session']?.toString() || "";
   const Session = await SessionManager.GetSession(Hash, IP);
@@ -292,7 +294,7 @@ app.post('/api/v0/client/chat/create', async (req: Request, res: Response) => {
   if (process.env.DEBUG_MODE == "true") console.log(apires);
   res.json(apires);
 });
-app.post('/api/v0/client/chat/get', async (req: Request, res: Response) => {
+app.post('/api/v0/client/chat/get', async (req: Request, res: Response): Promise<any> => {
   const IP = req.headers['x-forwarded-for']?.toString() || req.socket.remoteAddress || "";
   const Hash = req.headers['session']?.toString() || "";
   const Session = await SessionManager.GetSession(Hash, IP);
@@ -308,7 +310,7 @@ app.post('/api/v0/client/chat/get', async (req: Request, res: Response) => {
   if (process.env.DEBUG_MODE == "true") console.log(apires);
   res.json(apires);
 });
-app.post('/api/v0/client/chat/clear', async (req: Request, res: Response) => {
+app.post('/api/v0/client/chat/clear', async (req: Request, res: Response): Promise<any> => {
   const IP = req.headers['x-forwarded-for']?.toString() || req.socket.remoteAddress || "";
   const Hash = req.headers['session']?.toString() || "";
   const Session = await SessionManager.GetSession(Hash, IP);
@@ -325,7 +327,7 @@ app.post('/api/v0/client/chat/clear', async (req: Request, res: Response) => {
   if (process.env.DEBUG_MODE == "true") console.log(apires);
   res.json(apires);
 });
-app.post('/api/v0/client/chat/remove', async (req: Request, res: Response) => {
+app.post('/api/v0/client/chat/remove', async (req: Request, res: Response): Promise<any> => {
   const IP = req.headers['x-forwarded-for']?.toString() || req.socket.remoteAddress || "";
   const Hash = req.headers['session']?.toString() || "";
   const Session = await SessionManager.GetSession(Hash, IP);
@@ -342,7 +344,7 @@ app.post('/api/v0/client/chat/remove', async (req: Request, res: Response) => {
   if (process.env.DEBUG_MODE == "true") console.log(apires);
   res.json(apires);
 });
-app.post('/api/v0/client/chat/info', async (req: Request, res: Response) => {
+app.post('/api/v0/client/chat/info', async (req: Request, res: Response): Promise<any> => {
   const IP = req.headers['x-forwarded-for']?.toString() || req.socket.remoteAddress || "";
   const Hash = req.headers['session']?.toString() || "";
   const Session = await SessionManager.GetSession(Hash, IP);
@@ -359,7 +361,7 @@ app.post('/api/v0/client/chat/info', async (req: Request, res: Response) => {
   if (process.env.DEBUG_MODE == "true") console.log(apires);
   res.json(apires);
 });
-app.post('/api/v0/client/chat/setinfo', async (req: Request, res: Response) => {
+app.post('/api/v0/client/chat/setinfo', async (req: Request, res: Response): Promise<any> => {
   const IP = req.headers['x-forwarded-for']?.toString() || req.socket.remoteAddress || "";
   const Hash = req.headers['session']?.toString() || "";
   const Session = await SessionManager.GetSession(Hash, IP);
@@ -378,7 +380,7 @@ app.post('/api/v0/client/chat/setinfo', async (req: Request, res: Response) => {
   if (process.env.DEBUG_MODE == "true") console.log(apires);
   res.json(apires);
 });
-app.post('/api/v0/client/chat/adduser', async (req: Request, res: Response) => {
+app.post('/api/v0/client/chat/adduser', async (req: Request, res: Response): Promise<any> => {
   const IP = req.headers['x-forwarded-for']?.toString() || req.socket.remoteAddress || "";
   const Hash = req.headers['session']?.toString() || "";
   const Session = await SessionManager.GetSession(Hash, IP);
@@ -396,7 +398,7 @@ app.post('/api/v0/client/chat/adduser', async (req: Request, res: Response) => {
   if (process.env.DEBUG_MODE == "true") console.log(apires);
   res.json(apires);
 });
-app.post('/api/v0/client/chat/removeuser', async (req: Request, res: Response) => {
+app.post('/api/v0/client/chat/removeuser', async (req: Request, res: Response): Promise<any> => {
   const IP = req.headers['x-forwarded-for']?.toString() || req.socket.remoteAddress || "";
   const Hash = req.headers['session']?.toString() || "";
   const Session = await SessionManager.GetSession(Hash, IP);

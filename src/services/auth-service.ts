@@ -3,8 +3,8 @@ import { Token } from "../entities/token";
 import { User } from "../entities/user";
 import { TokenRepo, UserRepo } from "./db-service";
 import { AuthResultCode, ConfirmAuth2FAResultCode, ConfirmEnable2FAResultCode, Disable2FAResultCode, Enable2FAResultCode, RegisterResultCode, SetUserInfoResultCode, UserInfoResultCode } from "../declarations/enums";
-import { TOTP } from "totp-generator"
 import { SessionManager } from "./session-manager";
+import { StatusCodes } from "http-status-codes";
 
 const UsernameCharset = "ABCDEFGHIJKLMNOPQRSTUVWXYZЯЮЭЬЫЪЩШЧЦХФУТСРПОНМЛКЙИЗЖЁЕДГВБАabcdefghijklmnopqrstuvwxyzабвгдеёжзийклмнопрстуфхцчшщъыьэюя1234567890_";
 const PasswordCharset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZЯЮЭЬЫЪЩШЧЦХФУТСРПОНМЛКЙИЗЖЁЕДГВБАabcdefghijklmnopqrstuvwxyzабвгдеёжзийклмнопрстуфхцчшщъыьэюя1234567890_!\"@ $%&/()=?\'`*+~#-_.,;:{[]}\<(><<)><(>><)>|';
@@ -24,7 +24,7 @@ export function TestPasswordLegal(password?: string): boolean {
   return true;
 }
 
-export module TokenManager {
+export namespace TokenManager {
   export async function AuthToken(token?: string): Promise<number | undefined> {
     const Token = await TokenRepo.findOneBy({ hash: token });
     if (Token == null) return;
@@ -50,7 +50,7 @@ export module TokenManager {
   }, 180000);
 }
 
-export module AuthService {
+export namespace AuthService {
   export async function AuthUser(credentials: AuthCredentials, hash: string, ip: string): Promise<AuthResult> {
     try {
       if (credentials.username == undefined || credentials.password == undefined) return new AuthResult(false, AuthResultCode.NullParameter);
@@ -58,7 +58,9 @@ export module AuthService {
       if (!TestUsernameLegal(credentials.username)) return new AuthResult(false, AuthResultCode.UsernameFormat);
       if (!TestPasswordLegal(credentials.password)) return new AuthResult(false, AuthResultCode.PasswordFormat);
 
-      const usr = await UserRepo.findOneBy({ Username: credentials.username });
+      credentials.username = credentials.username.toLowerCase();
+
+      const usr = await UserRepo.findOneBy({ Username: credentials.username});
       if (usr == null) return new AuthResult(false, AuthResultCode.UserNotExists);
 
       const passValid = usr.ComparePassword(credentials.password);
@@ -83,6 +85,8 @@ export module AuthService {
       if (!TestUsernameLegal(credentials.username)) return new RegistrationResult(false, RegisterResultCode.UsernameFormat);
       if (!TestPasswordLegal(credentials.password)) return new RegistrationResult(false, RegisterResultCode.PasswordFormat);
       if (!TestUsernameLegal(nickname)) return new RegistrationResult(false, RegisterResultCode.NicknameFormat);
+
+      credentials.username = credentials.username.toLowerCase();
 
       if (await UserRepo.existsBy({ Username: credentials.username })) return new RegistrationResult(false, RegisterResultCode.UserAlreadyExists);
       if (nickname != undefined && await UserRepo.existsBy({ nickname: nickname })) return new RegistrationResult(false, RegisterResultCode.NicknameBusy);
@@ -222,10 +226,10 @@ export class AuthCredentials {
 
 export class AuthResult {
   public ok: boolean;
-  public status: number;
+  public status: AuthResultCode | StatusCodes;
   public token?: string;
 
-  constructor (ok: boolean, status: number, token?: string) {
+  constructor (ok: boolean, status: AuthResultCode, token?: string) {
     this.ok = ok;
     this.status = status;
     this.token = token;

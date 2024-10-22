@@ -46,7 +46,8 @@ export module StorageService {
       let _hash = await MD5(path);
       if (!_hash) return new UploadFileResult(false, UploadFileResultCode.InternalError);
       if (_hash !== hash) return new UploadFileResult(false, UploadFileResultCode.HashNotSame);
-  
+      await MetaRepo.update({ id: meta.id }, { hash: _hash });
+
       return new UploadFileResult(true, UploadFileResultCode.Success);
     } catch (err) {
       console.log(`[ERROR] StorageService::UploadFile\n${err}`);

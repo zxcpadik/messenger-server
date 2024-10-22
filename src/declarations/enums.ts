@@ -1,3 +1,4 @@
+// DEPRECATED --- REST INDEV
 
 export enum AuthResultCode {
   Success             = 100,
