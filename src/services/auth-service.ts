@@ -237,7 +237,7 @@ export class AuthResult {
 }
 export class RegistrationResult {
   public ok: boolean;
-  public status: number;
+  public status: RegisterResultCode | StatusCodes;
   public token?: string;
 
   constructor (ok: boolean, status: number, token?: string) {

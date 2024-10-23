@@ -6,7 +6,7 @@ import { StatusCodes } from 'http-status-codes';
 // API imports
 import { SessionManager } from "../services/session-manager";
 import { AuthCredentials, AuthService } from "../services/auth-service";
-import { AuthResultCode } from "../declarations/enums";
+import { AuthResultCode, RegisterResultCode } from "../declarations/enums";
 
 // VAR constants
 const URL_PATH = '/api/v1/';
@@ -23,6 +23,19 @@ function patch_auth_status(x: AuthResultCode): StatusCodes {
     105: StatusCodes.UNAUTHORIZED,
     106: StatusCodes.FORBIDDEN,
     109: StatusCodes.INTERNAL_SERVER_ERROR,
+    default: x
+  }[x] || x;
+}
+function patch_register_status(x: RegisterResultCode): StatusCodes { 
+  return {
+    110: StatusCodes.OK,
+    111: StatusCodes.BAD_REQUEST,
+    112: StatusCodes.BAD_REQUEST,
+    113: StatusCodes.BAD_REQUEST,
+    114: StatusCodes.CONFLICT,
+    115: StatusCodes.BAD_REQUEST,
+    116: StatusCodes.CONFLICT,
+    119: StatusCodes.INTERNAL_SERVER_ERROR,
     default: x
   }[x] || x;
 }
@@ -44,7 +57,7 @@ function register(app: Express) {
     else { res.clearCookie('session'); s.Hash = undefined as unknown as string; }
 
     return (res.status(rest).json({ status: rest, hash: s.Hash }), void 0);
-  }); // * [API] /SESSION
+  }); // * [API: V1] /SESSION
 
   app.post(URL_PATH + 'user/auth', async (req: Request, res: Response) => {
     const IP = req.headers['x-forwarded-for']?.toString() || req.socket.remoteAddress;
@@ -64,8 +77,30 @@ function register(app: Express) {
     else res.clearCookie('token');
 
     return (res.status(apires.status).json(apires), void 0);
-  }); // * [API] /USER/AUTH
+  }); // * [API: V1] /USER/AUTH
 
+  app.post(URL_PATH + 'user/register', async (req: Request, res: Response) => {
+    const IP = req.headers['x-forwarded-for']?.toString() || req.socket.remoteAddress;
+    const Hash = req.cookies['session'];
+    if (!IP) return (res.status(StatusCodes.BAD_REQUEST).send(), void 0);
+
+    const Session = await SessionManager.GetSession(Hash, IP);
+    if (Session.IsDecayed()) return (res.status(StatusCodes.UNAUTHORIZED).send(), void 0);
+
+    const creds = [req.body["username"], req.body["password"], req.body['nickname']]
+    if (creds.some(x => !x || x === "")) return (res.status(StatusCodes.BAD_REQUEST).send(), void 0);
+  
+    let nickname = creds.splice(2, 1);
+    const apires = await AuthService.RegisterUser(new AuthCredentials(...(creds.map(x => String(x)))), IP, String(nickname));
+    apires.status = patch_register_status(apires.status as RegisterResultCode)
+
+    if (apires.status === StatusCodes.OK) res.cookie('token', apires.token, { maxAge: TOKEN_LIFETIME, httpOnly: true });
+    else res.clearCookie('token');
+
+    return (res.status(apires.status).json(apires), void 0);
+  }); // * [API: V1] /USER/REGISTER
+
+  
 }
 
 export default register;
