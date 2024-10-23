@@ -34,6 +34,7 @@ export enum SetUserInfoResultCode {
   NicknameBusy        = 134,
   InternalError       = 139
 }
+// ! TMP FIX CONFILCT TODO
 export enum Enable2FAResultCode {
   Success             = 130,
   NullParameter       = 131,

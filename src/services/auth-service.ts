@@ -248,7 +248,7 @@ export class RegistrationResult {
 }
 export class UserInfoResult {
   public ok: boolean;
-  public status: number;
+  public status: UserInfoResultCode | StatusCodes;
   public info?: UserInfoObj;
 
   constructor (ok: boolean, status: number, info?: UserInfoObj) {
