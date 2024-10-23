@@ -259,7 +259,7 @@ export class UserInfoResult {
 }
 export class SetUserInfoResult {
   public ok: boolean;
-  public status: number;
+  public status: SetUserInfoResultCode | StatusCodes;
 
   constructor (ok: boolean, status: number) {
     this.ok = ok;

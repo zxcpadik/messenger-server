@@ -6,7 +6,7 @@ import { StatusCodes } from 'http-status-codes';
 // API imports
 import { SessionManager } from "../services/session-manager";
 import { AuthCredentials, AuthService } from "../services/auth-service";
-import { AuthResultCode, RegisterResultCode, UserInfoResultCode } from "../declarations/enums";
+import { AuthResultCode, RegisterResultCode, SetUserInfoResultCode, UserInfoResultCode } from "../declarations/enums";
 
 // VAR constants
 const URL_PATH = '/api/v1/';
@@ -45,6 +45,17 @@ function patch_getuserinfo_status(x: UserInfoResultCode): StatusCodes {
     121: StatusCodes.BAD_REQUEST,
     122: StatusCodes.FORBIDDEN,
     129: StatusCodes.INTERNAL_SERVER_ERROR,
+    default: x
+  }[x] || x;
+}
+function patch_setuserinfo_status(x: SetUserInfoResultCode): StatusCodes { 
+  return {
+    130: StatusCodes.OK,
+    131: StatusCodes.BAD_REQUEST,
+    132: StatusCodes.FORBIDDEN,
+    133: StatusCodes.BAD_REQUEST,
+    134: StatusCodes.CONFLICT,
+    139: StatusCodes.INTERNAL_SERVER_ERROR,
     default: x
   }[x] || x;
 }
@@ -123,6 +134,27 @@ function register(app: Express) {
 
     return (res.status(apires.status).json(apires), void 0);
   }); // * [API: V1] /USER/INFO:GET
+
+  app.put(URL_PATH + 'user/info', async (req: Request, res: Response) => {
+    const IP = req.headers['x-forwarded-for']?.toString() || req.socket.remoteAddress;
+    const Hash = req.cookies['session'];
+    if ([IP, Hash].some(x => !x)) return (res.status(StatusCodes.BAD_REQUEST).send(), void 0);
+
+    const Session = await SessionManager.GetSession(Hash, IP!);
+    if (Session.IsDecayed()) return (res.status(StatusCodes.UNAUTHORIZED).send(), void 0);
+  
+    const Token = req.cookies['token'];
+    if (!Token) return (res.status(StatusCodes.FORBIDDEN).send(), void 0);
+
+    const data = [req.body['nickname']]
+    if (data.some(x => !x || x === "")) return (res.status(StatusCodes.BAD_REQUEST).send(), void 0);
+  
+    let nickname = data[0];
+    const apires = await AuthService.SetInfo(Token, nickname);
+    apires.status = patch_setuserinfo_status(apires.status as SetUserInfoResultCode);
+
+    return (res.status(apires.status).json(apires), void 0);
+  }); // * [API: V1] /USER/INFO:PUT
 }
 
 export default register;
