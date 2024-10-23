@@ -12,7 +12,7 @@ export const AppDataSource = new DataSource({
     host: "localhost",
     port: 5432,
     username: "postgres",
-    password: "yFpulGPi4L9Mnq3j",
+    password: "12345678",
     database: "messenger",
     entities: [Session, ChatUser, Token, User, Message, Chat, Meta],
     synchronize: true,

@@ -65,6 +65,7 @@ function register(app: Express) {
   app.get(URL_PATH + 'session', async (req, res) => {
     const IP = req.headers['x-forwarded-for']?.toString() || req.socket.remoteAddress;
     const Hash = req.cookies['session'];
+    res.set('Cache-Control', 'no-store')
     if ([IP].some(x => !x)) return (res.status(StatusCodes.BAD_REQUEST).send(), void 0);
     
     var s = await (!Hash ? SessionManager.OpenNewSession(IP!) : SessionManager.RenewSession(Hash, IP!));
@@ -80,6 +81,7 @@ function register(app: Express) {
   app.post(URL_PATH + 'user/auth', async (req: Request, res: Response) => {
     const IP = req.headers['x-forwarded-for']?.toString() || req.socket.remoteAddress;
     const Hash = req.cookies['session'];
+    res.set('Cache-Control', 'no-store')
     if ([IP, Hash].some(x => !x)) return (res.status(StatusCodes.BAD_REQUEST).send(), void 0);
 
     const Session = await SessionManager.GetSession(Hash, IP!);
@@ -100,6 +102,7 @@ function register(app: Express) {
   app.post(URL_PATH + 'user/register', async (req: Request, res: Response) => {
     const IP = req.headers['x-forwarded-for']?.toString() || req.socket.remoteAddress;
     const Hash = req.cookies['session'];
+    res.set('Cache-Control', 'no-store')
     if ([IP, Hash].some(x => !x)) return (res.status(StatusCodes.BAD_REQUEST).send(), void 0);
 
     const Session = await SessionManager.GetSession(Hash, IP!);
@@ -121,6 +124,7 @@ function register(app: Express) {
   app.get(URL_PATH + 'user/info', async (req: Request, res: Response) => {
     const IP = req.headers['x-forwarded-for']?.toString() || req.socket.remoteAddress;
     const Hash = req.cookies['session'];
+    res.set('Cache-Control', 'no-store')
     if ([IP, Hash].some(x => !x)) return (res.status(StatusCodes.BAD_REQUEST).send(), void 0);
 
     const Session = await SessionManager.GetSession(Hash, IP!);
@@ -138,6 +142,7 @@ function register(app: Express) {
   app.put(URL_PATH + 'user/info', async (req: Request, res: Response) => {
     const IP = req.headers['x-forwarded-for']?.toString() || req.socket.remoteAddress;
     const Hash = req.cookies['session'];
+    res.set('Cache-Control', 'no-store')
     if ([IP, Hash].some(x => !x)) return (res.status(StatusCodes.BAD_REQUEST).send(), void 0);
 
     const Session = await SessionManager.GetSession(Hash, IP!);

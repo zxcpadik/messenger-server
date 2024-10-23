@@ -417,6 +417,9 @@ app.post('/api/v0/client/chat/removeuser', async (req: Request, res: Response): 
   res.json(apires);
 });
 
+import register from './api-v1';
+register(app)
+
 app.post(['/api', '/api/*'], async (req: Request, res: Response) => {
   if (process.env.DEBUG_MODE == "true") console.log(`[POST] NOAPI: ${req.url}`);
   res.json({ ok: false, status: 0 });
@@ -431,23 +434,23 @@ app.get('/', (req: Request, res: Response) => {
   res.send(`Server running.\n${new Date().toString()}`);
 })
 
-var pkey = fs.readFileSync("ssl/" + process.env.HTTPS_PKEY, "utf8");
-var cert = fs.readFileSync("ssl/" + process.env.HTTPS_CERT, "utf8");
-var chain = fs.readFileSync("ssl/" + process.env.HTTPS_CA, "utf8");
-var credentials = { key: pkey, cert: cert, ca: chain };
-var httpsServer = https.createServer(credentials, app);
+//var pkey = fs.readFileSync("ssl/" + process.env.HTTPS_PKEY, "utf8");
+//var cert = fs.readFileSync("ssl/" + process.env.HTTPS_CERT, "utf8");
+//var chain = fs.readFileSync("ssl/" + process.env.HTTPS_CA, "utf8");
+//var credentials = { key: pkey, cert: cert, ca: chain };
+//var httpsServer = https.createServer(credentials, app);
 
 import * as wst from 'ws';
 
-const expressWs = new wst.WebSocketServer({ server: httpsServer });
-expressWs.on('connection', (ws, r) => {
-  ws.send(fs.readFileSync('./logs/main.log'))
-  let _s = (x: any) => ws.send(x);
-  log_emit_ev.on('data', _s)
-  ws.on('close', () => log_emit_ev.off('data', _s));
-})
+//const expressWs = new wst.WebSocketServer({ server: httpsServer });
+//expressWs.on('connection', (ws, r) => {
+//  ws.send(fs.readFileSync('./logs/main.log'))
+//  let _s = (x: any) => ws.send(x);
+//  log_emit_ev.on('data', _s)
+//  ws.on('close', () => log_emit_ev.off('data', _s));
+//})
 
-httpsServer.listen(443, () => {
+app.listen(8080, () => {
     console.log(`[HTTPS] Server listening on port 443`);
 });
 
